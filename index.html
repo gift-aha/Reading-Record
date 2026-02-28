@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>📚 书架·一书多笔记 (专业版)</title>
+    <title>📚 书架·一书多笔记 (完整修复版)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -82,7 +82,26 @@
             padding: 25px; box-shadow: var(--shadow);
             border: 1px solid var(--border);
             transition: var(--transition);
+            position: relative;
         }
+        /* 编辑模式高亮 */
+        .form-card.editing {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(159, 126, 102, 0.2);
+        }
+        .form-card.editing::before {
+            content: '✏️ 编辑模式中';
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: var(--primary);
+            color: white;
+            font-size: 0.75rem;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
         .form-card h3 {
             display: flex; align-items: center; gap: 10px;
             font-size: 1.3rem; color: var(--text-main); margin-bottom: 20px;
@@ -119,6 +138,11 @@
             box-shadow: 0 4px 15px rgba(159, 126, 102, 0.3);
         }
         .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); }
+        .btn-danger {
+            background: #e74c3c; color: white;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+        }
+        .btn-danger:hover { background: #c0392b; transform: translateY(-2px); }
 
         /* 筛选栏 */
         .filter-bar {
@@ -154,7 +178,14 @@
             background: var(--bg-color); padding: 20px; cursor: pointer;
             display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid var(--border);
+            position: relative;
         }
+        /* 阻止点击 header 触发折叠当点击的是按钮时 */
+        .book-header .book-actions button {
+            pointer-events: auto; 
+        }
+        
+        .book-info { flex: 1; cursor: pointer; }
         .book-info h3 { font-size: 1.4rem; color: var(--text-main); margin-bottom: 4px; }
         .book-info p { font-size: 0.9rem; color: var(--text-sub); display: flex; align-items: center; gap: 5px; }
         
@@ -167,10 +198,44 @@
         .status-reading { background: #d9e3e0; color: #1f6d5a; }
         .status-read { background: #d5e1d5; color: #2c6e3b; }
         
-        .rating-display { color: #f1c40f; font-size: 0.9rem; }
+        .rating-display { color: #f1c40f; font-size: 0.9rem; margin-right: 10px; }
         .expand-icon { color: var(--text-sub); transition: transform 0.3s; }
         .book-card.collapsed .expand-icon { transform: rotate(-90deg); }
         .book-card.collapsed .notes-wrapper { display: none; }
+
+        /* 书籍操作按钮组 (编辑/删除) */
+        .book-actions {
+            display: flex;
+            gap: 5px;
+            margin-left: 10px;
+            opacity: 0; /* 默认隐藏 */
+            transform: translateX(10px);
+            transition: all 0.2s ease;
+        }
+        /* 鼠标悬停卡片时显示按钮，或者卡片处于聚焦状态 */
+        .book-card:hover .book-actions, 
+        .book-card:focus-within .book-actions {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        /* 移动端始终显示 */
+        @media (max-width: 768px) {
+            .book-actions { opacity: 1; transform: translateX(0); }
+        }
+
+        .action-book-btn {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+        .btn-edit-book { background: #eef2f7; color: var(--primary); }
+        .btn-edit-book:hover { background: var(--primary); color: white; }
+        .btn-del-book { background: #fceceb; color: #e74c3c; }
+        .btn-del-book:hover { background: #e74c3c; color: white; }
 
         .notes-wrapper { padding: 20px; background: var(--card-bg); }
         
@@ -217,7 +282,7 @@
         }
         .empty-state i { font-size: 4rem; margin-bottom: 20px; opacity: 0.3; }
 
-        /* 模态框 (用于导入/导出/设置) */
+        /* 模态框 */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.5); z-index: 1000;
@@ -231,13 +296,14 @@
             transform: scale(0.9); transition: transform 0.3s;
         }
         .modal.active .modal-content { transform: scale(1); }
-        .modal-buttons { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+        .modal-buttons { display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap;}
 
         @media (max-width: 768px) {
             .header { flex-direction: column; align-items: flex-start; }
             .header-controls { width: 100%; justify-content: space-between; }
             .forms-row { grid-template-columns: 1fr; }
             .filter-bar { border-radius: 20px; }
+            .book-actions { opacity: 1; transform: none; } /* 移动端始终显示操作按钮 */
         }
     </style>
 </head>
@@ -264,8 +330,8 @@
     <!-- 双表单 -->
     <div class="forms-row">
         <!-- 书籍表单 -->
-        <div class="form-card">
-            <h3><i class="fas fa-plus-circle"></i> 新增/编辑书籍</h3>
+        <div class="form-card" id="bookFormCard">
+            <h3><i class="fas fa-plus-circle"></i> <span id="bookFormTitle">新增书籍</span></h3>
             <form id="bookForm">
                 <input type="hidden" id="editBookId">
                 <div class="form-group">
@@ -285,15 +351,15 @@
                     </select>
                 </div>
                 <div class="btn-row">
-                    <button type="button" class="btn btn-secondary" onclick="resetBookForm()">重置</button>
+                    <button type="button" class="btn btn-secondary" onclick="resetBookForm()">取消/重置</button>
                     <button type="submit" class="btn btn-primary" id="bookSubmitBtn">添加书籍</button>
                 </div>
             </form>
         </div>
 
         <!-- 笔记表单 -->
-        <div class="form-card">
-            <h3><i class="fas fa-pen-fancy"></i> 新增/编辑笔记</h3>
+        <div class="form-card" id="noteFormCard">
+            <h3><i class="fas fa-pen-fancy"></i> <span id="noteFormTitle">新增笔记</span></h3>
             <form id="noteForm">
                 <input type="hidden" id="editNoteId">
                 <div class="form-group">
@@ -325,7 +391,7 @@
                     <textarea id="noteContent" class="form-control" placeholder="记录你的思考..." required></textarea>
                 </div>
                 <div class="btn-row">
-                    <button type="button" class="btn btn-secondary" onclick="resetNoteForm()">重置</button>
+                    <button type="button" class="btn btn-secondary" onclick="resetNoteForm()">取消/重置</button>
                     <button type="submit" class="btn btn-primary" id="noteSubmitBtn">添加笔记</button>
                 </div>
             </form>
@@ -376,7 +442,7 @@
             <input type="file" id="fileInput" accept=".json" style="display: none;" onchange="importData(this)">
         </div>
         <div class="modal-buttons" style="margin-top: 10px;">
-            <button class="btn btn-secondary" style="color: #e74c3c;" onclick="clearAllData()"><i class="fas fa-trash"></i> 清空所有</button>
+            <button class="btn btn-danger" onclick="clearAllData()"><i class="fas fa-trash"></i> 清空所有</button>
             <button class="btn btn-secondary" onclick="closeDataModal()">关闭</button>
         </div>
     </div>
@@ -529,8 +595,8 @@
                             <div style="color:var(--text-main); white-space:pre-wrap; margin-bottom:8px;">${escapeHtml(note.content)}</div>
                             <div class="note-tags">${tagHtml}</div>
                             <div class="note-actions">
-                                <button class="action-mini" onclick="editNote(${note.id})"><i class="fas fa-pen"></i></button>
-                                <button class="action-mini delete" onclick="deleteNote(${note.id})"><i class="fas fa-trash"></i></button>
+                                <button class="action-mini" onclick="event.stopPropagation(); editNote(${note.id})"><i class="fas fa-pen"></i></button>
+                                <button class="action-mini delete" onclick="event.stopPropagation(); deleteNote(${note.id})"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
                     `;
@@ -548,6 +614,16 @@
                             <span class="rating-display" title="平均分 ${avg}">${stars}</span>
                             <span class="status-badge status-${book.status === '想读' ? 'wish' : book.status === '在读' ? 'reading' : 'read'}">${book.status}</span>
                             <i class="fas fa-chevron-down expand-icon"></i>
+                            
+                            <!-- 新增：书籍操作按钮 (编辑/删除) -->
+                            <div class="book-actions" onclick="event.stopPropagation()">
+                                <button class="action-book-btn btn-edit-book" onclick="editBook(${book.id})" title="编辑书籍">
+                                    <i class="fas fa-pen"></i>
+                                </button>
+                                <button class="action-book-btn btn-del-book" onclick="deleteBook(${book.id})" title="删除书籍">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div class="notes-wrapper">
@@ -583,12 +659,14 @@
         card.classList.toggle('collapsed');
     };
 
+    // 准备添加笔记
     window.prepAddNote = function(bookId) {
         resetNoteForm();
         document.getElementById('noteBookSelect').value = bookId;
-        document.getElementById('noteForm').scrollIntoView({ behavior: 'smooth' });
+        scrollToForm('noteFormCard');
     };
 
+    // 编辑笔记
     window.editNote = function(id) {
         const note = notes.find(n => n.id == id);
         if (!note) return;
@@ -599,13 +677,57 @@
         document.getElementById('noteRating').value = note.rating;
         document.getElementById('noteTags').value = note.tags ? note.tags.join(', ') : '';
         document.getElementById('noteContent').value = note.content;
+        
+        // 更新表单 UI
+        document.getElementById('noteFormTitle').innerText = '编辑笔记';
         document.getElementById('noteSubmitBtn').innerHTML = '<i class="fas fa-save"></i> 更新笔记';
-        document.getElementById('noteForm').scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('noteFormCard').classList.add('editing');
+        
+        scrollToForm('noteFormCard');
     };
 
+    // 删除笔记
     window.deleteNote = function(id) {
         if(confirm('确定删除这条笔记吗？')) {
             notes = notes.filter(n => n.id != id);
+            saveData();
+            renderBooks();
+        }
+    };
+
+    // *** 新增：编辑书籍功能 ***
+    window.editBook = function(id) {
+        const book = books.find(b => b.id == id);
+        if (!book) return;
+        
+        document.getElementById('editBookId').value = book.id;
+        document.getElementById('bookTitle').value = book.title;
+        document.getElementById('bookAuthor').value = book.author || '';
+        document.getElementById('bookStatus').value = book.status;
+        
+        // 更新表单 UI
+        document.getElementById('bookFormTitle').innerText = '编辑书籍';
+        document.getElementById('bookSubmitBtn').innerHTML = '<i class="fas fa-save"></i> 更新书籍';
+        document.getElementById('bookSubmitBtn').classList.remove('btn-primary');
+        document.getElementById('bookSubmitBtn').classList.add('btn-primary'); // 保持样式，也可改为其他强调色
+        
+        // 高亮表单
+        document.getElementById('bookFormCard').classList.add('editing');
+        
+        scrollToForm('bookFormCard');
+    };
+
+    // 删除书籍
+    window.deleteBook = function(id) {
+        if(confirm('⚠️ 警告：删除书籍将同时删除该书下的所有笔记！\n\n确定要删除吗？')) {
+            books = books.filter(b => b.id != id);
+            notes = notes.filter(n => n.bookId != id);
+            
+            // 如果正在编辑这本书，重置表单
+            if (document.getElementById('editBookId').value == id) {
+                resetBookForm();
+            }
+            
             saveData();
             renderBooks();
         }
@@ -616,6 +738,20 @@
         renderBooks();
     };
 
+    function scrollToForm(elementId) {
+        const el = document.getElementById(elementId);
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // 移动端自动聚焦输入框
+            if (window.innerWidth < 768) {
+                setTimeout(() => {
+                    const inputs = el.querySelectorAll('input, textarea, select');
+                    if (inputs.length) inputs[0].focus();
+                }, 500);
+            }
+        }
+    }
+
     // --- 表单提交 ---
     document.getElementById('bookForm').addEventListener('submit', function(e) {
         e.preventDefault();
@@ -625,9 +761,13 @@
         const status = document.getElementById('bookStatus').value;
 
         if (id) {
+            // 更新模式
             const idx = books.findIndex(b => b.id == id);
-            if (idx !== -1) books[idx] = { ...books[idx], title, author, status };
+            if (idx !== -1) {
+                books[idx] = { ...books[idx], title, author, status };
+            }
         } else {
+            // 新增模式
             books.push({ id: Date.now(), title, author, status });
         }
         
@@ -647,10 +787,14 @@
         const tags = tagsStr ? tagsStr.split(/[,，]/).map(t => t.trim()).filter(t => t) : [];
 
         if (id) {
+            // 更新模式
             const idx = notes.findIndex(n => n.id == id);
-            if (idx !== -1) notes[idx] = { ...notes[idx], bookId: parseInt(bookId), date, rating, tags, content };
+            if (idx !== -1) {
+                notes[idx] = { ...notes[idx], bookId: parseInt(bookId), date, rating, tags, content };
+            }
             document.getElementById('noteBookSelect').disabled = false;
         } else {
+            // 新增模式
             notes.push({ id: Date.now(), bookId: parseInt(bookId), date, rating, tags, content });
         }
 
@@ -663,15 +807,19 @@
     window.resetBookForm = function() {
         document.getElementById('bookForm').reset();
         document.getElementById('editBookId').value = '';
+        document.getElementById('bookFormTitle').innerText = '新增书籍';
         document.getElementById('bookSubmitBtn').innerHTML = '<i class="fas fa-plus"></i> 添加书籍';
+        document.getElementById('bookFormCard').classList.remove('editing');
     };
 
     window.resetNoteForm = function() {
         document.getElementById('noteForm').reset();
         document.getElementById('editNoteId').value = '';
         document.getElementById('noteBookSelect').disabled = false;
+        document.getElementById('noteFormTitle').innerText = '新增笔记';
         document.getElementById('noteSubmitBtn').innerHTML = '<i class="fas fa-plus"></i> 添加笔记';
         document.getElementById('noteDate').valueAsDate = new Date();
+        document.getElementById('noteFormCard').classList.remove('editing');
     };
 
     function escapeHtml(text) {
@@ -701,8 +849,7 @@
             try {
                 const data = JSON.parse(e.target.result);
                 if (data.books && Array.isArray(data.books)) {
-                    if(confirm('导入将合并数据。继续？')) {
-                        // 简单合并：ID 冲突则跳过或更新，这里简单追加新 ID
+                    if(confirm('导入将合并数据（跳过 ID 冲突项）。继续？')) {
                         const existingIds = new Set(books.map(b => b.id));
                         data.books.forEach(b => { if (!existingIds.has(b.id)) books.push(b); });
                         
