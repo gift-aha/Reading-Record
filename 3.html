@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>那不勒斯四部曲 · 故事图谱（手机版）</title>
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- vis-network 用于绘制关系图 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, system-ui, -apple-system, 'Helvetica Neue', sans-serif;
+            background: #faf7f2;  /* 旧纸张底色 */
+            color: #2c3e50;
+            line-height: 1.5;
+            padding: 1rem 0.5rem;  /* 手机端左右留白减少 */
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(2px);
+            border-radius: 2rem;  /* 稍减小圆角 */
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.2);
+            padding: 1.5rem 1rem;  /* 手机内边距减小 */
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            border-bottom: 2px dashed #b87c5a;
+            padding-bottom: 1rem;
+        }
+
+        header h1 {
+            font-size: 2rem;  /* 手机适当缩小 */
+            font-weight: 400;
+            letter-spacing: 1px;
+            color: #7e4b3a;
+            font-family: 'Times New Roman', serif;
+            line-height: 1.2;
+        }
+
+        header h1 i {
+            font-size: 1.8rem;
+            color: #b1624b;
+            margin: 0 0.3rem;
+        }
+
+        header p {
+            font-size: 1rem;
+            color: #5e4b3c;
+            font-style: italic;
+            max-width: 700px;
+            margin: 0.8rem auto 0;
+            background: #e6dace;
+            padding: 0.4rem 1rem;
+            border-radius: 40px;
+            box-shadow: inset 0 1px 4px rgba(0,0,0,0.1);
+        }
+
+        .spoiler-note {
+            background: #d1b29a;
+            color: #2e1b12;
+            padding: 0.4rem 0.8rem;
+            border-radius: 30px;
+            display: inline-block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            border: 1px solid #aa7b64;
+        }
+
+        section {
+            margin-bottom: 2.5rem;
+        }
+
+        h2 {
+            font-size: 1.6rem;  /* 手机调整 */
+            font-weight: 350;
+            border-left: 6px solid #b87c5a;
+            padding-left: 0.8rem;
+            margin-bottom: 1.2rem;
+            color: #3b2b21;
+            font-family: 'Times New Roman', serif;
+        }
+
+        h2 i {
+            color: #996b54;
+            margin-right: 8px;
+        }
+
+        /* 人物网格 */
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* 手机最小宽度减小 */
+            gap: 1rem;
+        }
+
+        .character-card {
+            background: white;
+            border-radius: 20px;
+            padding: 1rem 0.8rem;
+            box-shadow: 0 8px 18px -6px rgba(100, 60, 40, 0.2);
+            transition: 0.15s ease;
+            border: 1px solid #f0e0d4;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .character-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 20px -8px #b7a091;
+        }
+
+        .character-icon {
+            font-size: 2.2rem;
+            color: #8f6b54;
+            margin-bottom: 0.3rem;
+            text-align: center;
+        }
+
+        .character-name {
+            font-size: 1.2rem;  /* 手机略小 */
+            font-weight: 600;
+            text-align: center;
+            border-bottom: 2px dotted #dbbcac;
+            padding-bottom: 0.3rem;
+            margin-bottom: 0.6rem;
+            color: #542f21;
+        }
+
+        .character-detail {
+            font-size: 0.85rem;  /* 手机缩小 */
+            color: #2c3e50;
+        }
+
+        .detail-item {
+            margin-bottom: 0.2rem;
+            display: flex;
+            align-items: baseline;
+            gap: 0.3rem;
+        }
+
+        .detail-item i {
+            width: 1.1rem;
+            color: #b1624b;
+            font-size: 0.8rem;
+        }
+
+        .badge-relation {
+            background: #e9dbd2;
+            border-radius: 20px;
+            padding: 0.15rem 0.6rem;
+            font-size: 0.7rem;
+            display: inline-block;
+            margin: 0.2rem 0.2rem 0 0;
+            color: #4d362b;
+        }
+
+        /* 时间轴 */
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .timeline-item {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            gap: 0.6rem;
+            background: #fefcf9;
+            border-radius: 30px;
+            padding: 0.6rem 1rem;
+            border-left: 5px solid #a56744;
+            box-shadow: 0 2px 6px #ece2d9;
+        }
+
+        .timeline-year {
+            font-weight: 700;
+            min-width: 70px;
+            font-size: 1.1rem;
+            color: #7e4b3a;
+            background: #f3e3d8;
+            padding: 0.1rem 0.8rem;
+            border-radius: 30px;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+
+        .timeline-desc {
+            flex: 1;
+            font-size: 0.9rem;
+        }
+
+        .timeline-desc strong {
+            color: #9c5f44;
+        }
+
+        .timeline-desc .person-tag {
+            background: #cdb2a2;
+            color: #2c1f18;
+            padding: 0.1rem 0.5rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            display: inline-block;
+            margin: 0.2rem 0.2rem 0.2rem 0;
+        }
+
+        /* 四部曲卡片 */
+        .quartet-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .book-card {
+            background: #f2e4da;
+            border-radius: 24px;
+            padding: 1.2rem 0.5rem;
+            text-align: center;
+            box-shadow: 0 10px 15px -8px #ab8d7a;
+            transition: 0.1s;
+        }
+
+        .book-card h3 {
+            font-size: 1.2rem;
+            font-weight: 400;
+            background: #fff1e7;
+            width: fit-content;
+            margin: 0 auto 0.6rem;
+            padding: 0.2rem 1rem;
+            border-radius: 40px;
+            color: #633f2b;
+        }
+
+        .book-card p {
+            font-size: 0.8rem;
+            color: #352217;
+            margin-bottom: 0.3rem;
+            padding: 0 0.2rem;
+        }
+
+        .book-card i {
+            color: #a66b51;
+            font-size: 1.6rem;
+            margin-bottom: 0.2rem;
+        }
+
+        /* 关系辅助表 */
+        .relation-compact {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.2rem;
+            background: #f6ede6;
+            border-radius: 30px;
+            padding: 1.2rem 1rem;
+            margin-top: 1.5rem;
+            border: 1px solid #e5cfc0;
+        }
+
+        .family-tree {
+            flex: 2;
+            min-width: 200px;  /* 手机适应 */
+        }
+
+        .family-tree h4 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: #7b4a33;
+            border-bottom: 1px solid #d4b6a5;
+            padding-bottom: 0.2rem;
+        }
+
+        .tree-row {
+            margin: 0.4rem 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.2rem 0.8rem;
+            font-size: 0.85rem;
+        }
+
+        .relation-label {
+            font-weight: 600;
+            min-width: 70px;
+            color: #573f31;
+        }
+
+        .relation-name {
+            background: #ddd0c4;
+            padding: 0.1rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
+        }
+
+        hr {
+            border: none;
+            border-top: 2px dashed #cdb6a8;
+            margin: 1rem 0;
+        }
+
+        /* 新增：关系图容器 */
+        .network-container {
+            background: #fffefc;
+            border-radius: 30px;
+            padding: 1rem;
+            box-shadow: 0 10px 25px -10px #b7a091;
+            border: 1px solid #ecdacf;
+            margin: 1.5rem 0 1rem;
+        }
+        #mynetwork {
+            width: 100%;
+            height: 420px;  /* 手机适当 */
+            border-radius: 20px;
+            background: #fefaf7;
+            border: 1px solid #dcbeb0;
+        }
+
+        /* 快速引用标签 */
+        .quick-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            font-size: 0.85rem;
+            background: #f1e7df;
+            border-radius: 40px;
+            padding: 1rem 0.8rem;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.8rem;
+            color: #7b6458;
+        }
+
+        /* ========= 专门为小屏（手机）优化 ========= */
+        @media (max-width: 480px) {
+            body {
+                padding: 0.5rem 0.2rem;
+            }
+            .container {
+                padding: 1rem 0.8rem;
+                border-radius: 1.5rem;
+            }
+            header h1 {
+                font-size: 1.7rem;
+            }
+            header h1 i {
+                font-size: 1.4rem;
+            }
+            header p {
+                font-size: 0.9rem;
+            }
+            h2 {
+                font-size: 1.4rem;
+                border-left-width: 5px;
+            }
+            .character-grid {
+                grid-template-columns: 1fr; /* 单列卡片，更清晰 */
+            }
+            .character-card {
+                padding: 0.8rem 0.6rem;
+            }
+            .character-name {
+                font-size: 1.1rem;
+            }
+            .character-detail {
+                font-size: 0.8rem;
+            }
+            .timeline-item {
+                padding: 0.5rem 0.8rem;
+            }
+            .timeline-year {
+                font-size: 1rem;
+                min-width: 60px;
+            }
+            .timeline-desc {
+                font-size: 0.85rem;
+            }
+            .quartet-grid {
+                grid-template-columns: 1fr;  /* 每行一本书 */
+            }
+            .book-card {
+                padding: 0.8rem 0.5rem;
+            }
+            .book-card h3 {
+                font-size: 1.1rem;
+            }
+            .relation-compact {
+                padding: 1rem 0.8rem;
+                border-radius: 24px;
+            }
+            .family-tree h4 {
+                font-size: 1rem;
+            }
+            .tree-row {
+                font-size: 0.8rem;
+            }
+            .relation-name {
+                font-size: 0.75rem;
+                padding: 0.1rem 0.6rem;
+            }
+            .network-container {
+                padding: 0.8rem;
+            }
+            #mynetwork {
+                height: 380px;  /* 小屏稍微再低一点 */
+            }
+            .quick-tags {
+                font-size: 0.75rem;
+                padding: 0.8rem 0.5rem;
+            }
+        }
+
+        /* 超小屏 (<=360px) 进一步优化 */
+        @media (max-width: 360px) {
+            .container {
+                padding: 0.8rem 0.5rem;
+            }
+            header h1 {
+                font-size: 1.5rem;
+            }
+            h2 {
+                font-size: 1.2rem;
+            }
+            .timeline-year {
+                font-size: 0.9rem;
+                min-width: 55px;
+            }
+            .character-name {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1><i class="fas fa-book-open"></i> 那不勒斯四部曲 · 故事图谱 <i class="fas fa-map-signs"></i></h1>
+        <p>莉拉与莱农——跨越半个世纪的友谊</p>
+        <div class="spoiler-note"><i class="fas fa-eye"></i> 包含全四部情节，辅助阅读</div>
+    </header>
+
+    <!-- 核心人物 -->
+    <section>
+        <h2><i class="fas fa-users"></i> 核心人物</h2>
+        <div class="character-grid">
+            <!-- 莱农 -->
+            <div class="character-card">
+                <div class="character-icon"><i class="fas fa-user-circle"></i></div>
+                <div class="character-name">埃莱娜·格雷科<br>（莱农）</div>
+                <div class="character-detail">
+                    <div class="detail-item"><i class="fas fa-heart"></i><span>挚友：莉拉</span></div>
+                    <div class="detail-item"><i class="fas fa-ring"></i><span>前夫：彼得罗</span></div>
+                    <div class="detail-item"><i class="fas fa-fan"></i><span>情人：尼诺、安东尼奥</span></div>
+                    <div class="detail-item"><i class="fas fa-child"></i><span>女儿：黛黛、艾尔莎</span></div>
+                    <div><span class="badge-relation">作家</span><span class="badge-relation">第一视角</span></div>
+                </div>
+            </div>
+            <!-- 莉拉 -->
+            <div class="character-card">
+                <div class="character-icon"><i class="fas fa-user-circle"></i></div>
+                <div class="character-name">莉拉·赛鲁罗<br>（莉娜）</div>
+                <div class="character-detail">
+                    <div class="detail-item"><i class="fas fa-heart"></i><span>挚友：莱农</span></div>
+                    <div class="detail-item"><i class="fas fa-ring"></i><span>前夫：斯特凡诺</span></div>
+                    <div class="detail-item"><i class="fas fa-hand-holding-heart"></i><span>伴侣：恩佐</span></div>
+                    <div class="detail-item"><i class="fas fa-fan"></i><span>情人：尼诺</span></div>
+                    <div class="detail-item"><i class="fas fa-child"></i><span>儿子：里诺(詹纳罗) · 女儿：蒂娜</span></div>
+                </div>
+            </div>
+            <!-- 尼诺 -->
+            <div class="character-card">
+                <div class="character-icon"><i class="fas fa-user-tie"></i></div>
+                <div class="character-name">尼诺·萨拉托雷</div>
+                <div class="character-detail">
+                    <div class="detail-item"><i class="fas fa-heart-broken"></i><span>情人：莉拉、莱农</span></div>
+                    <div class="detail-item"><i class="fas fa-father"></i><span>父亲：多纳托</span></div>
+                    <div class="detail-item"><i class="fas fa-wife"></i><span>妻子：埃利奥诺拉</span></div>
+                    <div><span class="badge-relation">诗人</span><span class="badge-relation">政客</span></div>
+                </div>
+            </div>
+            <!-- 恩佐 -->
+            <div class="character-card">
+                <div class="character-icon"><i class="fas fa-user-check"></i></div>
+                <div class="character-name">恩佐·斯坎诺</div>
+                <div class="character-detail">
+                    <div class="detail-item"><i class="fas fa-heart"></i><span>伴侣：莉拉</span></div>
+                    <div class="detail-item"><i class="fas fa-child"></i><span>女儿：蒂娜</span></div>
+                    <div class="detail-item"><i class="fas fa-laptop-code"></i><span>计算机工程师</span></div>
+                    <div><span class="badge-relation">忠厚</span></div>
+                </div>
+            </div>
+            <!-- 斯特凡诺 -->
+            <div class="character-card">
+                <div class="character-icon"><i class="fas fa-user-alt"></i></div>
+                <div class="character-name">斯特凡诺·卡拉奇</div>
+                <div class="character-detail">
+                    <div class="detail-item"><i class="fas fa-ring"></i><span>前妻：莉拉</span></div>
+                    <div class="detail-item"><i class="fas fa-child"></i><span>儿子：里诺(詹纳罗)</span></div>
+                    <div class="detail-item"><i class="fas fa-store"></i><span>肉食店老板</span></div>
+                </div>
+            </div>
+            <!-- 彼得罗 -->
+            <div class="character-card">
+                <div class="character-icon"><i class="fas fa-user-graduate"></i></div>
+                <div class="character-name">彼得罗·艾罗塔</div>
+                <div class="character-detail">
+                    <div class="detail-item"><i class="fas fa-ring"></i><span>前妻：莱农</span></div>
+                    <div class="detail-item"><i class="fas fa-child"></i><span>女儿：黛黛、艾尔莎</span></div>
+                    <div class="detail-item"><i class="fas fa-university"></i><span>佛罗伦萨教授</span></div>
+                </div>
+            </div>
+            <!-- 马尔切洛·索拉拉 -->
+            <div class="character-card">
+                <div class="character-icon"><i class="fas fa-user-crown"></i></div>
+                <div class="character-name">马尔切洛·索拉拉</div>
+                <div class="character-detail">
+                    <div class="detail-item"><i class="fas fa-ring"></i><span>妻子：皮诺奇娅</span></div>
+                    <div class="detail-item"><i class="fas fa-heart"></i><span>曾追求莉拉</span></div>
+                    <div><span class="badge-relation">黑道</span></div>
+                </div>
+            </div>
+            <!-- 米凯莱·索拉拉 -->
+            <div class="character-card">
+                <div class="character-icon"><i class="fas fa-user-crown"></i></div>
+                <div class="character-name">米凯莱·索拉拉</div>
+                <div class="character-detail">
+                    <div class="detail-item"><i class="fas fa-heart-broken"></i><span>对莉拉偏执</span></div>
+                    <div class="detail-item"><i class="fas fa-skull"></i><span>后被杀</span></div>
+                    <div><span class="badge-relation">危险人物</span></div>
+                </div>
+            </div>
+            <!-- 安东尼奥 -->
+            <div class="character-card">
+                <div class="character-icon"><i class="fas fa-user"></i></div>
+                <div class="character-name">安东尼奥·阿奇勒</div>
+                <div class="character-detail">
+                    <div class="detail-item"><i class="fas fa-heart"></i><span>初恋：莱农</span></div>
+                    <div class="detail-item"><i class="fas fa-brain"></i><span>心理创伤</span></div>
+                </div>
+            </div>
+            <!-- 帕斯卡莱 -->
+            <div class="character-card">
+                <div class="character-icon"><i class="fas fa-user"></i></div>
+                <div class="character-name">帕斯卡莱·佩卢索</div>
+                <div class="character-detail">
+                    <div class="detail-item"><i class="fas fa-hammer"></i><span>泥瓦匠，共产党</span></div>
+                    <div class="detail-item"><i class="fas fa-gavel"></i><span>后被捕</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 时间轴：从童年到消失 -->
+    <section>
+        <h2><i class="fas fa-timeline"></i> 时间轴 · 关键事件</h2>
+        <div class="timeline">
+            <div class="timeline-item"><span class="timeline-year">1944-45</span><div class="timeline-desc"><strong>莱农 & 莉拉出生</strong> 在那不勒斯贫困社区。<span class="person-tag">莱农</span><span class="person-tag">莉拉</span></div></div>
+            <div class="timeline-item"><span class="timeline-year">1950年代</span><div class="timeline-desc"><strong>童年友谊</strong> 布娃娃事件，莉拉设计鞋子。<span class="person-tag">莉拉</span><span class="person-tag">莱农</span></div></div>
+            <div class="timeline-item"><span class="timeline-year">1958左右</span><div class="timeline-desc"><strong>莉拉婚礼</strong> 嫁给斯特凡诺，发现索拉拉在场。<span class="person-tag">莉拉</span><span class="person-tag">斯特凡诺</span></div></div>
+            <div class="timeline-item"><span class="timeline-year">1960年代初</span><div class="timeline-desc"><strong>伊斯基亚假期</strong> 莱农爱上尼诺，莉拉与尼诺私奔。<span class="person-tag">莱农</span><span class="person-tag">尼诺</span><span class="person-tag">莉拉</span></div></div>
+            <div class="timeline-item"><span class="timeline-year">1960年代中</span><div class="timeline-desc"><strong>莱农大学 & 出版</strong> 小说《小姑凉》成功。<span class="person-tag">莱农</span><span class="person-tag">彼得罗</span></div></div>
+            <div class="timeline-item"><span class="timeline-year">1960年代末</span><div class="timeline-desc"><strong>工厂与计算机</strong> 莉拉在工厂，恩佐自学计算机。<span class="person-tag">莉拉</span><span class="person-tag">恩佐</span></div></div>
+            <div class="timeline-item"><span class="timeline-year">1970年代初</span><div class="timeline-desc"><strong>莱农结婚</strong> 嫁彼得罗，生黛黛、艾尔莎。莉拉与恩佐成计算机专家。<span class="person-tag">莱农</span><span class="person-tag">莉拉</span></div></div>
+            <div class="timeline-item"><span class="timeline-year">1970年代中</span><div class="timeline-desc"><strong>再遇尼诺·私奔</strong> 莱农离开彼得罗与尼诺在一起。<span class="person-tag">尼诺</span><span class="person-tag">莱农</span></div></div>
+            <div class="timeline-item"><span class="timeline-year">1980前后</span><div class="timeline-desc"><strong>蒂娜出生与失踪</strong> 莉拉女儿蒂娜失踪。<span class="person-tag">莉拉</span><span class="person-tag">恩佐</span><span class="person-tag">蒂娜</span></div></div>
+            <div class="timeline-item"><span class="timeline-year">1980年代</span><div class="timeline-desc"><strong>索拉拉之死</strong> 兄弟被暗杀。<span class="person-tag">索拉拉兄弟</span></div></div>
+            <div class="timeline-item"><span class="timeline-year">1990-2000</span><div class="timeline-desc"><strong>莉拉的“淡化”</strong> 抹去自己痕迹。<span class="person-tag">莉拉</span><span class="person-tag">莱农</span></div></div>
+            <div class="timeline-item"><span class="timeline-year">2005左右</span><div class="timeline-desc"><strong>两个布娃娃</strong> 莱农收到娃娃，莉拉消失。<span class="person-tag">莱农</span><span class="person-tag">莉拉</span></div></div>
+        </div>
+        <p style="margin-top: 0.5rem; font-style:italic; font-size:0.8rem; color:#775e4d;"><i class="fas fa-clock"></i> 部分年份为推定</p>
+    </section>
+
+    <!-- 四部曲速览 -->
+    <section>
+        <h2><i class="fas fa-book"></i> 四部曲故事概览</h2>
+        <div class="quartet-grid">
+            <div class="book-card"><i class="fas fa-1"></i><h3>我的天才女友</h3><p>童年至青春期，莉拉与莱农的依赖与竞争。</p></div>
+            <div class="book-card"><i class="fas fa-2"></i><h3>新名字的故事</h3><p>莉拉婚后不幸，与尼诺相爱；莱农上大学、出版小说。</p></div>
+            <div class="book-card"><i class="fas fa-3"></i><h3>离开的，留下的</h3><p>莱农结婚，莉拉学计算机；莱农与尼诺私奔。</p></div>
+            <div class="book-card"><i class="fas fa-4"></i><h3>失踪的孩子</h3><p>蒂娜失踪，索拉拉被杀，莉拉最终消失。</p></div>
+        </div>
+    </section>
+
+    <!-- 人物关系网络图（直观） -->
+    <section>
+        <h2><i class="fas fa-project-diagram"></i> 人物关系网络图</h2>
+        <div class="network-container">
+            <div id="mynetwork"></div>
+            <p style="text-align:center; margin-top:0.6rem; font-size:0.75rem; color:#6f4e3c;"><i class="fas fa-hand-pointer"></i> 可拖拽、缩放，连线文字表示关系</p>
+        </div>
+    </section>
+
+    <!-- 关系辅助表（文本版） -->
+    <section>
+        <h2><i class="fas fa-sitemap"></i> 人物关系简谱</h2>
+        <div class="relation-compact">
+            <div class="family-tree">
+                <h4><i class="fas fa-female"></i> 莉拉 · 赛鲁罗</h4>
+                <div class="tree-row"><span class="relation-label">父母：</span><span class="relation-name">农齐亚 & 费尔南多</span></div>
+                <div class="tree-row"><span class="relation-label">兄弟：</span><span class="relation-name">里诺 (大里诺)</span></div>
+                <div class="tree-row"><span class="relation-label">丈夫/伴侣：</span><span class="relation-name">斯特凡诺(离) · 恩佐(伴)</span></div>
+                <div class="tree-row"><span class="relation-label">子女：</span><span class="relation-name">詹纳罗(子) · 蒂娜(女)</span></div>
+                <div class="tree-row"><span class="relation-label">牵连：</span><span class="relation-name">尼诺(情人) · 米凯莱(执念)</span></div>
+            </div>
+            <div class="family-tree">
+                <h4><i class="fas fa-female"></i> 莱农 · 格雷科</h4>
+                <div class="tree-row"><span class="relation-label">父母：</span><span class="relation-name">伊玛科拉塔 & 维托里奥</span></div>
+                <div class="tree-row"><span class="relation-label">丈夫/情人：</span><span class="relation-name">彼得罗(前夫) · 尼诺(情人)</span></div>
+                <div class="tree-row"><span class="relation-label">女儿：</span><span class="relation-name">黛黛 · 艾尔莎</span></div>
+                <div class="tree-row"><span class="relation-label">姻亲：</span><span class="relation-name">阿黛尔(婆婆)</span></div>
+            </div>
+            <div class="family-tree">
+                <h4><i class="fas fa-male"></i> 尼诺 · 萨拉托雷</h4>
+                <div class="tree-row"><span class="relation-label">父亲：</span><span class="relation-name">多纳托</span></div>
+                <div class="tree-row"><span class="relation-label">妻子/情人：</span><span class="relation-name">埃利奥诺拉(妻) · 莉拉 · 莱农</span></div>
+            </div>
+            <div class="family-tree">
+                <h4><i class="fas fa-people-arrows"></i> 社区纽带</h4>
+                <div class="tree-row"><span class="relation-label">索拉拉家：</span><span class="relation-name">马尔切洛 · 米凯莱</span></div>
+                <div class="tree-row"><span class="relation-label">卡拉奇家：</span><span class="relation-name">斯特凡诺 · 皮诺奇娅</span></div>
+                <div class="tree-row"><span class="relation-label">佩卢索家：</span><span class="relation-name">帕斯卡莱</span></div>
+            </div>
+        </div>
+        <div style="background:#f2e3d9; border-radius:24px; padding:1rem; margin-top:1rem; font-size:0.85rem;">
+            <i class="fas fa-link"></i> <strong>事件交织</strong>：莉拉婚礼→伊斯基亚→工厂时期→蒂娜失踪→索拉拉被杀。友谊贯穿始终。
+        </div>
+    </section>
+
+    <!-- 快速引用 -->
+    <hr>
+    <div class="quick-tags">
+        <span><i class="fas fa-tag"></i> 堂·阿奇勒</span>
+        <span><i class="fas fa-tag"></i> 《蓝色仙女》</span>
+        <span><i class="fas fa-tag"></i> 赛鲁罗鞋店</span>
+        <span><i class="fas fa-tag"></i> 布娃娃</span>
+    </div>
+
+    <footer>
+        ⚡ 埃莱娜·费兰特《那不勒斯四部曲》 · 阅读辅助图谱
+    </footer>
+</div>
+
+<!-- vis-network 脚本 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js"></script>
+<script>
+    (function() {
+        window.addEventListener('load', function() {
+            const nodes = new vis.DataSet([
+                { id: 'lenu', label: '莱农 · 格雷科', group: 'lenu', color: '#b1624b' },
+                { id: 'lila', label: '莉拉 · 赛鲁罗', group: 'lila', color: '#7e4b3a' },
+                { id: 'nino', label: '尼诺 · 萨拉托雷', group: 'nino', color: '#2c6b8f' },
+                { id: 'enzo', label: '恩佐 · 斯坎诺', group: 'enzo', color: '#5f7e5a' },
+                { id: 'stefano', label: '斯特凡诺 · 卡拉奇', group: 'stefano', color: '#a0583a' },
+                { id: 'pietro', label: '彼得罗 · 艾罗塔', group: 'pietro', color: '#4f6d7f' },
+                { id: 'marcello', label: '马尔切洛 · 索拉拉', group: 'solar', color: '#994d4d' },
+                { id: 'michele', label: '米凯莱 · 索拉拉', group: 'solar', color: '#aa3939' },
+                { id: 'antonio', label: '安东尼奥 · 阿奇勒', group: 'others', color: '#8f6b54' },
+                { id: 'pasquale', label: '帕斯卡莱 · 佩卢索', group: 'others', color: '#7d6b4b' },
+                { id: 'rino_sr', label: '里诺 (莉拉兄)', group: 'lila_fam', color: '#a5634b' },
+                { id: 'gennaro', label: '詹纳罗 (小里诺)', group: 'lila_fam', color: '#b38663' },
+                { id: 'tina', label: '蒂娜 (莉拉女)', group: 'lila_fam', color: '#c49a8c' },
+                { id: 'dede', label: '黛黛 (莱农女)', group: 'lenu_fam', color: '#c28b7c' },
+                { id: 'elsa', label: '艾尔莎 (莱农女)', group: 'lenu_fam', color: '#c28b7c' }
+            ]);
+
+            const edges = new vis.DataSet([
+                { from: 'lenu', to: 'lila', label: '挚友', arrows: 'to;from', color: '#d9735c' },
+                { from: 'lenu', to: 'nino', label: '情人', color: '#d48c6b' },
+                { from: 'lila', to: 'nino', label: '情人', color: '#d48c6b' },
+                { from: 'lila', to: 'enzo', label: '伴侣', color: '#66997c' },
+                { from: 'lila', to: 'stefano', label: '前夫', color: '#9b6b50' },
+                { from: 'lila', to: 'rino_sr', label: '兄妹', color: '#9b826b' },
+                { from: 'lila', to: 'gennaro', label: '母子', color: '#b28b75' },
+                { from: 'lila', to: 'tina', label: '母女', color: '#b28b75' },
+                { from: 'lenu', to: 'pietro', label: '前夫', color: '#9b6b50' },
+                { from: 'lenu', to: 'antonio', label: '初恋', color: '#d48c6b' },
+                { from: 'lenu', to: 'dede', label: '母女', color: '#b28b75' },
+                { from: 'lenu', to: 'elsa', label: '母女', color: '#b28b75' },
+                { from: 'stefano', to: 'gennaro', label: '父子', color: '#9b826b' },
+                { from: 'enzo', to: 'tina', label: '父女', color: '#9b826b' },
+                { from: 'marcello', to: 'michele', label: '兄弟', color: '#9b826b' },
+                { from: 'michele', to: 'lila', label: '执念', color: '#c07a5c', dashes: true },
+                { from: 'stefano', to: 'marcello', label: '利益', color: '#8f7a6b', dashes: true },
+                { from: 'pasquale', to: 'lila', label: '同志', color: '#7f9b7a' },
+                { from: 'pasquale', to: 'lenu', label: '老友', color: '#7f9b7a' },
+                { from: 'rino_sr', to: 'stefano', label: '生意', color: '#a58e7a', dashes: true },
+                { from: 'nino', to: 'pietro', label: '情敌', color: '#a55e5e', dashes: true }
+            ]);
+
+            const container = document.getElementById('mynetwork');
+            if (!container) return;
+
+            const data = { nodes, edges };
+            const options = {
+                autoResize: true,
+                height: '100%',
+                width: '100%',
+                layout: { improvedLayout: true, hierarchical: false },
+                interaction: { hover: true, tooltipDelay: 200, navigationButtons: true },
+                physics: {
+                    enabled: true,
+                    solver: 'forceAtlas2Based',
+                    forceAtlas2Based: { gravitationalConstant: -30, centralGravity: 0.01 },
+                    stabilization: { iterations: 150 }
+                },
+                edges: {
+                    smooth: { type: 'continuous' },
+                    font: { size: 11, align: 'middle', color: '#4a2f23', background: '#fdf1e8' },
+                    color: { inherit: 'from' },
+                    width: 2,
+                },
+                nodes: {
+                    shape: 'dot',
+                    size: 22,
+                    font: { size: 12, color: '#2c1f18', face: 'Segoe UI' },
+                    borderWidth: 2,
+                    shadow: true
+                },
+                groups: {
+                    lenu: { color: '#b1624b' }, lila: { color: '#7e4b3a' }, nino: { color: '#2c6b8f' },
+                    enzo: { color: '#5f7e5a' }, stefano: { color: '#a0583a' }, pietro: { color: '#4f6d7f' },
+                    solar: { color: '#994d4d' }, others: { color: '#8f6b54' }, lila_fam: { color: '#b38663' },
+                    lenu_fam: { color: '#c28b7c' }
+                }
+            };
+
+            new vis.Network(container, data, options);
+        });
+    })();
+</script>
+<!-- 手机优化提示 -->
+<p style="text-align:center; margin-top:0.5rem; opacity:0.6; font-size:0.7rem;">📱 手机优化版 · 触摸拖拽可看关系图</p>
+</body>
+</html>
