@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>🎤 英语歌学习助手 </title>
+    <!-- SortableJS 和 html2canvas -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #f2ede7;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            padding: 12px;
+            color: #1e1e2a;
+            transition: filter 0.2s;
+            line-height: 1.4;
+        }
+
+        body.immersive-active {
+            overflow: hidden;
+            filter: brightness(0.95);
+        }
+
+        body.toolbox-open {
+            overflow: hidden;
+        }
+
+        .library-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .title-section h1 {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-weight: 650;
+            font-size: 1.7rem;
+            color: #1e1e2a;
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+        }
+
+        .title-section h1 span {
+            background: #1e1e2a;
+            color: #f2ede7;
+            font-size: 0.8rem;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-weight: 450;
+        }
+
+        .subhead {
+            color: #4b4b60;
+            font-size: 0.95rem;
+            margin-top: 4px;
+            border-left: 4px solid #b9afa5;
+            padding-left: 16px;
+            background: #e9e1d9;
+            border-radius: 0 30px 30px 0;
+            width: fit-content;
+            padding: 8px 20px 8px 16px;
+        }
+
+        /* 顶部工具栏 - 移动端友好 */
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0 16px;
+            align-items: center;
+        }
+
+        .btn {
+            background: white;
+            border: 1.5px solid #d0c6bc;
+            padding: 10px 16px;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.15s;
+            color: #1e1e2a;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            min-height: 44px; /* 便于触摸 */
+        }
+
+        .btn.primary {
+            background: #1e1e2a;
+            border-color: #1e1e2a;
+            color: white;
+        }
+
+        .btn.toolbox-btn {
+            background: #e0d9d0;
+            border-color: #b9aea3;
+            font-size: 1rem;
+        }
+
+        .search-area {
+            flex: 2;
+            min-width: 200px;
+            display: flex;
+            gap: 6px;
+            background: white;
+            border: 1.5px solid #d0c6bc;
+            border-radius: 50px;
+            padding: 4px 4px 4px 16px;
+            align-items: center;
+            width: 100%; /* 在小屏幕占满 */
+        }
+
+        .search-area input {
+            flex: 1;
+            border: none;
+            padding: 10px 0;
+            font-size: 0.95rem;
+            background: transparent;
+            outline: none;
+            min-width: 120px;
+        }
+
+        .search-area button {
+            background: #1e1e2a;
+            border: none;
+            color: white;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.1s;
+            white-space: nowrap;
+            font-size: 0.9rem;
+            min-height: 40px;
+        }
+
+        #storageStatus {
+            font-size: 0.8rem;
+            color: #6f675f;
+            background: #e7dfd7;
+            padding: 6px 14px;
+            border-radius: 30px;
+            white-space: nowrap;
+            margin-left: auto;
+        }
+
+        /* 卡片网格 */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin: 16px 0 24px;
+        }
+
+        @media (min-width: 480px) {
+            .cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 900px) {
+            .cards-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .song-card {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 0;
+            box-shadow: 0 8px 20px -6px rgba(0,0,0,0.1);
+            border: 1px solid #e6dbd2;
+            transition: 0.1s;
+            overflow: hidden;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            background: #ffffff;
+            cursor: pointer;
+            user-select: none;
+            border-bottom: 1px solid transparent;
+            transition: background 0.1s;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .drag-handle {
+            font-size: 1.6rem;
+            color: #b1a69b;
+            cursor: grab;
+            width: 30px;
+            text-align: center;
+            flex-shrink: 0;
+            user-select: none;
+            touch-action: none;
+        }
+
+        .star-icon {
+            font-size: 1.5rem;
+            color: #f5c542;
+            cursor: pointer;
+            width: 34px;
+            text-align: center;
+            flex-shrink: 0;
+            background: none;
+            border: none;
+            padding: 4px 0;
+        }
+
+        .header-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .header-title {
+            font-weight: 650;
+            font-size: 1.1rem;
+            color: #1e1e2a;
+            line-height: 1.3;
+        }
+
+        .header-artist {
+            font-size: 0.8rem;
+            color: #8b7f74;
+            font-style: italic;
+        }
+
+        .header-meta {
+            display: flex;
+            gap: 6px;
+            font-size: 0.65rem;
+            color: #756b62;
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+            flex-wrap: wrap;
+        }
+
+        .header-meta span {
+            background: #eee7e0;
+            padding: 3px 8px;
+            border-radius: 20px;
+        }
+
+        .action-icons {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.1s;
+            color: #5f554b;
+            background: #f3ede7;
+            flex-shrink: 0;
+        }
+
+        .icon-btn:active {
+            background: #e0d6cd;
+        }
+
+        .delete-btn {
+            background: none;
+            border: 1px solid #f3cdc8;
+            color: #b14f48;
+            font-size: 1.3rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: #fef5f3;
+        }
+
+        .expand-icon {
+            font-size: 1.6rem;
+            color: #9f9186;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 30px;
+            background: #f3ede7;
+        }
+
+        .card-details {
+            padding: 0 14px 16px 14px;
+            border-top: 1px solid #ede3db;
+            background: #fefbf8;
+        }
+
+        .details-inner {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-top: 12px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .field-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: #7b6f66;
+            margin-left: 6px;
+        }
+
+        .field input, .field textarea {
+            width: 100%;
+            border: 1px solid #d9cdc2;
+            border-radius: 18px;
+            padding: 10px 14px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            background: #fffcf9;
+            transition: 0.1s;
+            font-family: inherit;
+            resize: vertical;
+        }
+
+        .field input:focus, .field textarea:focus {
+            outline: none;
+            border-color: #9a897d;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(30,30,42,0.08);
+        }
+
+        .no-matches {
+            text-align: center;
+            padding: 40px 20px;
+            background: #faf5f0;
+            border-radius: 40px;
+            color: #7b6f66;
+            font-size: 1.1rem;
+            grid-column: 1 / -1;
+        }
+
+        /* 沉浸式模态框 - 手机优化 */
+        .immersive-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+        }
+
+        .immersive-card {
+            background: white;
+            border-radius: 28px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .immersive-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .immersive-header h2 {
+            font-size: 1.6rem;
+            color: #1e1e2a;
+        }
+
+        .close-immersive {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            width: 44px;
+            height: 44px;
+            border-radius: 30px;
+            background: #f0e9e2;
+        }
+
+        .immersive-fields {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* 工具箱侧边栏 - 手机优化 */
+        .toolbox-panel {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 90%;
+            max-width: 380px;
+            height: 100vh;
+            background: #fffcf8;
+            box-shadow: -5px 0 25px rgba(0,0,0,0.2);
+            transition: right 0.25s ease;
+            z-index: 2000;
+            padding: 20px 16px;
+            overflow-y: auto;
+            border-left: 1px solid #e0d4cb;
+        }
+
+        .toolbox-panel.open {
+            right: 0;
+        }
+
+        .toolbox-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .toolbox-header h2 {
+            font-size: 1.6rem;
+            color: #1e1e2a;
+        }
+
+        .close-toolbox {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            width: 44px;
+            height: 44px;
+            border-radius: 30px;
+            background: #f0e9e2;
+        }
+
+        .toolbox-section {
+            margin-bottom: 28px;
+        }
+
+        .toolbox-section h3 {
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+            color: #4b3f36;
+            border-left: 4px solid #b9afa5;
+            padding-left: 12px;
+        }
+
+        .toolbox-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .toolbox-btn {
+            background: #f0e9e2;
+            border: 1.5px solid #d0c6bc;
+            padding: 10px 16px;
+            border-radius: 40px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.1s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+            min-height: 44px;
+        }
+
+        .toolbox-btn.star-filter.active {
+            background: #f5c542;
+            border-color: #b0820f;
+        }
+
+        .toolbox-btn:active {
+            background: #e0d6cd;
+        }
+
+        /* 词汇本列表 - 移动端优化 */
+        .vocab-list {
+            list-style: none;
+            padding: 0;
+            max-height: 350px;
+            overflow-y: auto;
+            border-top: 1px solid #ede3db;
+            margin-top: 10px;
+        }
+
+        .vocab-item {
+            display: flex;
+            flex-direction: column;
+            background: #f6f0ea;
+            border-radius: 30px;
+            margin-bottom: 8px;
+            padding: 0;
+            border: 1px solid transparent;
+        }
+
+        .vocab-main {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            cursor: pointer;
+            min-height: 52px;
+        }
+
+        .vocab-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .vocab-word {
+            font-weight: 500;
+            font-size: 1rem;
+            color: #1e1e2a;
+        }
+
+        .vocab-count {
+            background: #d3c8be;
+            color: #1e1e2a;
+            padding: 4px 10px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .vocab-note-icon {
+            font-size: 1.3rem;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 30px;
+            background: #e8dfd7;
+            user-select: none;
+            transition: 0.1s;
+            margin-right: 4px;
+            min-width: 44px;
+            text-align: center;
+        }
+
+        .vocab-note-icon:active {
+            background: #d1c3b7;
+        }
+
+        .vocab-note-editor {
+            padding: 0 16px 16px 16px;
+            display: none;
+        }
+
+        .vocab-note-editor.open {
+            display: block;
+        }
+
+        .vocab-note-editor textarea {
+            width: 100%;
+            border: 1px solid #d9cdc2;
+            border-radius: 20px;
+            padding: 12px;
+            font-size: 0.9rem;
+            background: white;
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.3);
+            z-index: 1500;
+        }
+
+        .overlay.show {
+            display: block;
+        }
+
+        .footer-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 24px;
+            background: #eae2da;
+            padding: 12px 18px;
+            border-radius: 60px;
+            color: #2d2d3a;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .song-count {
+            background: #1e1e2a;
+            color: #f0e9e2;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+        }
+
+        .tip-note {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+        }
+
+        #importFile {
+            display: none;
+        }
+
+        /* 小屏特殊处理 */
+        @media (max-width: 480px) {
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .search-area {
+                width: 100%;
+                margin: 4px 0;
+            }
+            .btn, .search-area button {
+                justify-content: center;
+            }
+            .card-header {
+                padding: 8px 10px;
+            }
+            .action-icons {
+                gap: 4px;
+            }
+            .icon-btn, .delete-btn, .expand-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="library-container">
+    <div class="title-section">
+        <h1>
+            🎤 英语歌学习助手
+            <span>手机优化</span>
+        </h1>
+        <div class="subhead">
+            点击🔧工具箱
+        </div>
+    </div>
+
+    <!-- 顶部工具栏 -->
+    <div class="toolbar">
+        <button class="btn primary" id="addCardBtn">➕ 添加歌曲</button>
+        <button class="btn toolbox-btn" id="toolboxToggleBtn">🔧 工具箱</button>
+        
+        <div class="search-area">
+            <input type="text" id="searchInput" placeholder="搜索歌手、歌名、标签..." value="">
+            <button id="searchBtn">搜索</button>
+        </div>
+        
+        <span id="storageStatus">已保存</span>
+    </div>
+
+    <!-- 卡片网格 -->
+    <div id="cardsGrid" class="cards-grid"></div>
+
+    <!-- 底部信息 -->
+    <div class="footer-info">
+        <div class="tip-note">
+            <span>💡 拖动☰排序 · ⭐收藏 · 🧘沉浸</span>
+        </div>
+        <div class="song-count" id="songCount">0 首</div>
+    </div>
+</div>
+
+<!-- 沉浸式模态框 -->
+<div id="immersiveModal" class="immersive-modal">
+    <div class="immersive-card" id="immersiveCard">
+        <div class="immersive-header">
+            <h2 id="immersiveTitle">专注学习</h2>
+            <button class="close-immersive" id="closeImmersiveBtn">✕</button>
+        </div>
+        <div id="immersiveFields" class="immersive-fields"></div>
+    </div>
+</div>
+
+<!-- 工具箱侧边栏 -->
+<div id="toolboxPanel" class="toolbox-panel">
+    <div class="toolbox-header">
+        <h2>🧰 工具箱</h2>
+        <button class="close-toolbox" id="closeToolboxBtn">✕</button>
+    </div>
+
+    <div class="toolbox-section">
+        <h3>📋 数据操作</h3>
+        <div class="toolbox-buttons">
+            <button class="toolbox-btn" id="toolboxSaveBtn">💾 导出备份</button>
+            <button class="toolbox-btn" id="toolboxLoadBtn">📂 导入备份</button>
+            <button class="toolbox-btn" id="toolboxResetBtn">↺ 重置默认</button>
+            <button class="toolbox-btn star-filter" id="toolboxStarFilterBtn">⭐ 只看收藏</button>
+            <button class="toolbox-btn" id="toolboxResetSearchBtn">🔄 显示全部</button>
+        </div>
+    </div>
+
+    <div class="toolbox-section">
+        <h3>📖 词汇本 <span style="font-size:0.8rem;">(点击词汇筛选)</span></h3>
+        <div id="vocabListContainer" class="vocab-list-container"></div>
+    </div>
+    <p style="color:#7b6f66; font-size:0.8rem; margin-top:8px;">点击📝添加笔记</p>
+</div>
+<div id="overlay" class="overlay"></div>
+
+<input type="file" id="importFile" accept="application/json">
+
+<script>
+    (function() {
+        // ----- 字段定义 -----
+        const FIELDS = [
+            { key: 'song', label: '歌名', tag: 'input' },
+            { key: 'artist', label: '歌手', tag: 'input' },
+            { key: 'album', label: '专辑', tag: 'input' },
+            { key: 'level', label: '学习阶段', tag: 'input' },
+            { key: 'tags', label: '标签 (逗号分隔)', tag: 'input' },
+            { key: 'vocab', label: '核心词汇/短语 (逗号分隔)', tag: 'textarea', rows: 2 },
+            { key: 'pronunciation', label: '发音要点', tag: 'textarea', rows: 2 },
+            { key: 'grammar', label: '语法知识点', tag: 'textarea', rows: 2 },
+            { key: 'culture', label: '文化背景/趣闻', tag: 'textarea', rows: 2 },
+            { key: 'lyrics', label: '歌词片段', tag: 'textarea', rows: 2 },
+            { key: 'notes', label: '我的笔记', tag: 'textarea', rows: 2 }
+        ];
+
+        // 默认示例数据
+        const DEFAULT_SONGS = [
+            { artist: 'Taylor Swift', song: 'Love Story', album: 'Fearless', level: '初级', tags: '浪漫,童话,乡村', starred: true, vocab: '\'cause, propose, scarf', pronunciation: '\'It\'s a\' 连读', grammar: '祈使句', culture: '罗密欧与朱丽叶现代版', lyrics: 'Romeo, take me somewhere we can be alone...', notes: '副歌已跟唱' },
+            { artist: 'Taylor Swift', song: 'Mine', album: 'Speak Now', level: '初级', tags: '爱情,回忆,叙事', starred: false, vocab: 'made a rebel of, brace myself for, careless man\'s careful daughter', pronunciation: '\'and I\' 读成 an-dai', grammar: '过去时叙事', culture: '灵感来自度假时看到的夫妇', lyrics: 'You made a rebel of a careless man\'s careful daughter...', notes: '动词短语很实用' },
+            { artist: 'Taylor Swift', song: 'We Are Never Ever Getting Back Together', album: 'Red', level: '中级', tags: '分手,流行,口语', starred: false, vocab: 'getting back together, like, ever, messaging', pronunciation: '\'never ever\' 重读', grammar: '口语重复', culture: '经典分手对话', lyrics: 'We are never ever ever getting back together...', notes: '学会坚决拒绝' },
+            { artist: 'Taylor Swift', song: 'All Too Well (10 min)', album: 'Red (Taylor\'s Version)', level: '高级', tags: '伤感,细节,围巾', starred: true, vocab: 'maple latte, delicate, scarf, plaid shirt', pronunciation: '\'twas (it was缩写)', grammar: '虚拟语气,细节描写', culture: 'Jake Gyllenhaal 围巾梗', lyrics: 'And I left my scarf there at your sister\'s house...', notes: '长句分析' },
+            { artist: 'Taylor Swift', song: 'Blank Space', album: '1989', level: '中级', tags: '讽刺,流行,幽默', starred: true, vocab: 'darling, nightmare, saga, long list', pronunciation: '\'gotta long list\' 连读', grammar: '反讽修辞', culture: '媒体标签', lyrics: 'Got a long list of ex-lovers...', notes: '词汇有趣' },
+            { artist: 'Taylor Swift', song: 'Anti-Hero', album: 'Midnights', level: '中级', tags: '自我,抑郁,反英雄', starred: false, vocab: 'covert narcissism, self-sabotage, depression', pronunciation: '\'it\'s me, hi\' 轻松语调', grammar: '自我剖析', culture: 'MV隐喻', lyrics: 'It\'s me, hi, I\'m the problem, it\'s me...', notes: '复杂情绪简单词' },
+            { artist: 'Taylor Swift', song: 'The Last Great American Dynasty', album: 'folklore', level: '高级', tags: '历史,故事,独立', starred: false, vocab: 'dynasty, scandal, saltbox house, affair', pronunciation: '叙事气声, \'there goes\'连读', grammar: '过去完成时', culture: '罗德岛豪宅真实历史', lyrics: 'There goes the last great American dynasty...', notes: '短篇小说结构' },
+            { artist: 'Taylor Swift', song: 'Long Live', album: 'Speak Now', level: '中级', tags: '励志,感谢,摇滚', starred: true, vocab: 'crown, cheers, dragons, kingdom', pronunciation: '副歌力量发声', grammar: '祈愿语气', culture: '写给乐队和粉丝', lyrics: 'Long live the walls we crashed through...', notes: '毕业典礼可用' },
+            { artist: 'Ed Sheeran', song: 'Shape of You', album: '÷', level: '中级', tags: '流行,节奏', starred: false, vocab: 'shape, push and pull', pronunciation: '连读', grammar: '现在进行时', culture: '健身房神曲', lyrics: 'I\'m in love with your body', notes: '适合练连读' },
+            { artist: 'Adele', song: 'Hello', album: '25', level: '中级', tags: '伤感,经典', starred: false, vocab: 'hello from the other side', pronunciation: '颤音', grammar: '现在完成时', culture: '电话留言', lyrics: 'Hello, it\'s me', notes: '练情感表达' },
+            { artist: 'Bruno Mars', song: 'Just the Way You Are', album: 'Doo-Wops', level: '初级', tags: '浪漫,流行', starred: false, vocab: 'amazing, just the way you are', pronunciation: '连读', grammar: '一般现在时', culture: '情歌经典', lyrics: 'When I see your face...', notes: '简单温暖' }
+        ];
+
+        let songsData = [];
+        let expandedState = [];
+        let vocabNotes = {};
+        let currentSearchTerm = '';
+        let showOnlyStarred = false;
+        let sortableInstance = null;
+
+        const STORAGE_KEY = 'multisinger_songs';
+        const EXPAND_STORAGE_KEY = 'multisinger_expand';
+        const NOTES_STORAGE_KEY = 'vocab_notes';
+
+        const gridEl = document.getElementById('cardsGrid');
+        const storageStatus = document.getElementById('storageStatus');
+        const songCountSpan = document.getElementById('songCount');
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+
+        const toolboxPanel = document.getElementById('toolboxPanel');
+        const overlay = document.getElementById('overlay');
+        const toolboxToggleBtn = document.getElementById('toolboxToggleBtn');
+        const closeToolboxBtn = document.getElementById('closeToolboxBtn');
+        const toolboxStarFilterBtn = document.getElementById('toolboxStarFilterBtn');
+        const toolboxResetSearchBtn = document.getElementById('toolboxResetSearchBtn');
+        const vocabListContainer = document.getElementById('vocabListContainer');
+        const importFile = document.getElementById('importFile');
+
+        const modal = document.getElementById('immersiveModal');
+        const closeImmersiveBtn = document.getElementById('closeImmersiveBtn');
+        const immersiveTitle = document.getElementById('immersiveTitle');
+        const immersiveFields = document.getElementById('immersiveFields');
+
+        // 存储操作
+        function loadFromStorage() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                try { songsData = JSON.parse(stored); } catch { songsData = JSON.parse(JSON.stringify(DEFAULT_SONGS)); }
+            } else { songsData = JSON.parse(JSON.stringify(DEFAULT_SONGS)); }
+
+            const notesStored = localStorage.getItem(NOTES_STORAGE_KEY);
+            if (notesStored) { try { vocabNotes = JSON.parse(notesStored) || {}; } catch { vocabNotes = {}; } } else { vocabNotes = {}; }
+
+            expandedState = new Array(songsData.length).fill(false);
+            const expStored = localStorage.getItem(EXPAND_STORAGE_KEY);
+            if (expStored) {
+                try {
+                    const savedExp = JSON.parse(expStored);
+                    if (Array.isArray(savedExp) && savedExp.length === songsData.length) expandedState = savedExp;
+                } catch {}
+            }
+        }
+
+        function saveToStorage(quiet = false) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(songsData));
+            localStorage.setItem(EXPAND_STORAGE_KEY, JSON.stringify(expandedState));
+            localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(vocabNotes));
+            if (!quiet) storageStatus.innerText = '已保存 ' + new Date().toLocaleTimeString();
+            else storageStatus.innerText = '已自动保存';
+            updateSongCount();
+        }
+
+        function updateSongCount() {
+            if (songCountSpan) songCountSpan.innerText = songsData.length + ' 首';
+        }
+
+        // 过滤
+        function getFilteredIndices(term, onlyStarred) {
+            let indices = songsData.map((_, idx) => idx);
+            if (term.trim()) {
+                const lowerTerm = term.trim().toLowerCase();
+                indices = indices.filter(idx => {
+                    const song = songsData[idx];
+                    const searchable = [song.song, song.artist, song.album, song.level, song.tags, song.vocab, song.pronunciation, song.grammar, song.culture, song.lyrics, song.notes];
+                    return searchable.some(val => val && val.toLowerCase().includes(lowerTerm));
+                });
+            }
+            if (onlyStarred) indices = indices.filter(idx => songsData[idx].starred === true);
+            return indices;
+        }
+
+        // 词汇本
+        function buildVocabList() {
+            const vocabMap = new Map();
+            songsData.forEach(song => {
+                if (song.vocab) {
+                    song.vocab.split(',').map(w => w.trim()).filter(w => w).forEach(w => vocabMap.set(w, (vocabMap.get(w)||0)+1));
+                }
+            });
+            return Array.from(vocabMap.entries()).sort((a,b)=>a[0].localeCompare(b[0]));
+        }
+
+        function saveVocabNote(word, content) {
+            if (content.trim() === '') delete vocabNotes[word];
+            else vocabNotes[word] = content;
+            saveToStorage(true);
+        }
+
+        function renderVocabPanel() {
+            const entries = buildVocabList();
+            if (!entries.length) {
+                vocabListContainer.innerHTML = '<p style="padding:20px;text-align:center;color:#7b6f66;">暂无词汇，请添加歌曲并填写“核心词汇/短语”</p>';
+                return;
+            }
+            let html = '<ul class="vocab-list">';
+            entries.forEach(([word, count]) => {
+                const note = vocabNotes[word] || '';
+                const safeId = 'note-'+word.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'');
+                html += `<li class="vocab-item" data-word="${word.replace(/"/g,'&quot;')}">
+                    <div class="vocab-main">
+                        <div class="vocab-left">
+                            <span class="vocab-word">${word}</span>
+                            <span class="vocab-count">${count}</span>
+                        </div>
+                        <span class="vocab-note-icon" data-word="${word.replace(/"/g,'&quot;')}">📝</span>
+                    </div>
+                    <div id="${safeId}" class="vocab-note-editor ${note?'open':''}">
+                        <textarea class="vocab-note-textarea" data-word="${word.replace(/"/g,'&quot;')}" placeholder="记录发音/翻译/注意事项...">${note.replace(/"/g,'&quot;')}</textarea>
+                    </div>
+                </li>`;
+            });
+            html += '</ul>';
+            vocabListContainer.innerHTML = html;
+
+            document.querySelectorAll('.vocab-main').forEach(main => {
+                main.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('vocab-note-icon')) return;
+                    const word = main.closest('.vocab-item').dataset.word;
+                    searchInput.value = word;
+                    currentSearchTerm = word;
+                    showOnlyStarred = false;
+                    updateStarFilterButton();
+                    renderCards();
+                });
+            });
+            document.querySelectorAll('.vocab-note-icon').forEach(icon => {
+                icon.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const word = icon.dataset.word;
+                    const safeId = 'note-'+word.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'');
+                    const ed = document.getElementById(safeId);
+                    if (ed) {
+                        ed.classList.toggle('open');
+                        if (ed.classList.contains('open')) ed.querySelector('textarea')?.focus();
+                    }
+                });
+            });
+            document.querySelectorAll('.vocab-note-textarea').forEach(ta => {
+                ta.addEventListener('blur', (e) => saveVocabNote(e.target.dataset.word, e.target.value));
+            });
+        }
+
+        function updateStarFilterButton() {
+            toolboxStarFilterBtn.classList.toggle('active', showOnlyStarred);
+        }
+
+        function openToolbox() { renderVocabPanel(); toolboxPanel.classList.add('open'); overlay.classList.add('show'); document.body.classList.add('toolbox-open'); }
+        function closeToolbox() { toolboxPanel.classList.remove('open'); overlay.classList.remove('show'); document.body.classList.remove('toolbox-open'); }
+
+        // Sortable
+        function initSortable() {
+            if (sortableInstance) sortableInstance.destroy();
+            sortableInstance = new Sortable(gridEl, {
+                handle: '.drag-handle',
+                animation: 200,
+                onEnd: (evt) => {
+                    const cards = document.querySelectorAll('.song-card');
+                    const newOrder = Array.from(cards).map(c => parseInt(c.dataset.originalIndex));
+                    songsData = newOrder.map(i => songsData[i]);
+                    expandedState = newOrder.map(i => expandedState[i]);
+                    renderCards();
+                    saveToStorage(true);
+                }
+            });
+        }
+
+        // 渲染卡片
+        function renderCards() {
+            if (!gridEl) return;
+            const filtered = getFilteredIndices(currentSearchTerm, showOnlyStarred);
+            if (!filtered.length) {
+                gridEl.innerHTML = `<div class="no-matches">✨ 没有匹配的歌曲</div>`;
+                updateSongCount();
+                return;
+            }
+            gridEl.innerHTML = '';
+            filtered.forEach(origIdx => {
+                const song = songsData[origIdx];
+                const isExpanded = expandedState[origIdx] || false;
+                const card = document.createElement('div');
+                card.className = 'song-card';
+                card.dataset.originalIndex = origIdx;
+                const header = document.createElement('div');
+                header.className = 'card-header';
+                header.innerHTML = `
+                    <span class="drag-handle">☰</span>
+                    <button class="icon-btn star-icon">${song.starred ? '⭐' : '☆'}</button>
+                    <div class="header-info">
+                        <div class="header-title">${song.song || '未命名'}</div>
+                        <div class="header-artist">${song.artist || '未知'}</div>
+                        <div class="header-meta">
+                            <span>${song.album || '未知专辑'}</span>
+                            <span>${song.level || '未分级'}</span>
+                            ${song.tags ? '<span>#' + song.tags.split(',')[0].trim() + '</span>' : ''}
+                        </div>
+                    </div>
+                    <div class="action-icons">
+                        <button class="icon-btn">🧘</button>
+                        <button class="icon-btn">📸</button>
+                        <button class="delete-btn">🗑️</button>
+                        <span class="icon-btn expand-icon">${isExpanded ? '−' : '+'}</span>
+                    </div>
+                `;
+                // 事件
+                header.querySelector('.star-icon').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    songsData[origIdx].starred = !songsData[origIdx].starred;
+                    saveToStorage(true);
+                    e.target.innerText = songsData[origIdx].starred ? '⭐' : '☆';
+                });
+                header.querySelector('.icon-btn:first-child')?.addEventListener('click', (e) => { e.stopPropagation(); openImmersive(origIdx); });
+                header.querySelector('.icon-btn:nth-child(2)')?.addEventListener('click', (e) => { e.stopPropagation(); exportCardAsImage(card); });
+                header.querySelector('.delete-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (confirm(`删除《${song.song||'未命名'}》？`)) {
+                        songsData.splice(origIdx,1);
+                        expandedState.splice(origIdx,1);
+                        renderCards();
+                        saveToStorage();
+                    }
+                });
+                header.querySelector('.expand-icon').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    expandedState[origIdx] = !expandedState[origIdx];
+                    renderCards();
+                    saveToStorage(true);
+                });
+                header.addEventListener('click', (e) => {
+                    if (e.target.closest('button') || e.target.closest('.drag-handle') || e.target.closest('.star-icon')) return;
+                    expandedState[origIdx] = !expandedState[origIdx];
+                    renderCards();
+                    saveToStorage(true);
+                });
+                card.appendChild(header);
+
+                if (isExpanded) {
+                    const details = document.createElement('div');
+                    details.className = 'card-details';
+                    const inner = document.createElement('div');
+                    inner.className = 'details-inner';
+                    FIELDS.forEach(f => {
+                        const div = document.createElement('div');
+                        div.className = 'field';
+                        div.innerHTML = `<span class="field-label">${f.label}</span>`;
+                        const input = f.tag==='input' ? document.createElement('input') : document.createElement('textarea');
+                        if (f.tag==='input') input.type = 'text';
+                        else input.rows = f.rows || 2;
+                        input.value = song[f.key] || '';
+                        input.addEventListener('input', (e) => { songsData[origIdx][f.key] = e.target.value; saveToStorage(true); });
+                        div.appendChild(input);
+                        inner.appendChild(div);
+                    });
+                    details.appendChild(inner);
+                    card.appendChild(details);
+                }
+                gridEl.appendChild(card);
+            });
+            initSortable();
+            updateSongCount();
+        }
+
+        function openImmersive(idx) {
+            const song = songsData[idx];
+            immersiveTitle.innerText = song.song || '专注学习';
+            immersiveFields.innerHTML = '';
+            FIELDS.forEach(f => {
+                const div = document.createElement('div');
+                div.className = 'field';
+                div.innerHTML = `<span class="field-label">${f.label}</span>`;
+                const input = f.tag==='input' ? document.createElement('input') : document.createElement('textarea');
+                if (f.tag==='input') input.type = 'text';
+                else input.rows = f.rows || 2;
+                input.value = song[f.key] || '';
+                input.addEventListener('input', (e) => { songsData[idx][f.key] = e.target.value; saveToStorage(true); });
+                div.appendChild(input);
+                immersiveFields.appendChild(div);
+            });
+            modal.style.display = 'flex';
+            document.body.classList.add('immersive-active');
+        }
+        function closeImmersive() { modal.style.display = 'none'; document.body.classList.remove('immersive-active'); }
+        function exportCardAsImage(card) {
+            html2canvas(card, { scale: 1.5, backgroundColor: '#ffffff' }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `song-${Date.now()}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }).catch(err => alert('截图失败：'+err));
+        }
+        function addNewCard() {
+            const newSong = {}; FIELDS.forEach(f => newSong[f.key] = ''); newSong.starred = false;
+            songsData.push(newSong); expandedState.push(true);
+            currentSearchTerm = ''; searchInput.value = ''; showOnlyStarred = false; updateStarFilterButton();
+            renderCards(); saveToStorage();
+        }
+        function resetToDefault() {
+            if (confirm('用默认示例替换所有数据？')) {
+                songsData = JSON.parse(JSON.stringify(DEFAULT_SONGS));
+                expandedState = new Array(songsData.length).fill(false);
+                vocabNotes = {};
+                currentSearchTerm = ''; searchInput.value = ''; showOnlyStarred = false;
+                updateStarFilterButton(); renderCards(); saveToStorage();
+            }
+        }
+        function exportToJson() {
+            const data = { songs: songsData, notes: vocabNotes };
+            const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.download = `songs_backup_${new Date().toISOString().slice(0,10)}.json`;
+            a.href = url; a.click(); URL.revokeObjectURL(url);
+        }
+        function importFromJson(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (Array.isArray(imported)) { songsData = imported; vocabNotes = {}; }
+                    else if (imported.songs && Array.isArray(imported.songs)) { songsData = imported.songs; vocabNotes = imported.notes || {}; }
+                    else { alert('格式错误'); return; }
+                    expandedState = new Array(songsData.length).fill(false);
+                    currentSearchTerm = ''; searchInput.value = ''; showOnlyStarred = false;
+                    updateStarFilterButton(); renderCards(); saveToStorage(); storageStatus.innerText = '导入成功！';
+                } catch (err) { alert('解析失败：'+err.message); }
+            };
+            reader.readAsText(file);
+        }
+        function performSearch() { currentSearchTerm = searchInput.value; renderCards(); }
+        function toggleStarFilter() { showOnlyStarred = !showOnlyStarred; updateStarFilterButton(); renderCards(); }
+        function resetSearch() { searchInput.value = ''; currentSearchTerm = ''; showOnlyStarred = false; updateStarFilterButton(); renderCards(); }
+
+        function init() {
+            loadFromStorage();
+            currentSearchTerm = ''; searchInput.value = ''; showOnlyStarred = false;
+            updateStarFilterButton();
+            renderCards();
+            saveToStorage(true);
+
+            document.getElementById('addCardBtn').addEventListener('click', addNewCard);
+            searchBtn.addEventListener('click', performSearch);
+            searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') performSearch(); });
+
+            toolboxToggleBtn.addEventListener('click', openToolbox);
+            closeToolboxBtn.addEventListener('click', closeToolbox);
+            overlay.addEventListener('click', closeToolbox);
+
+            document.getElementById('toolboxSaveBtn').addEventListener('click', exportToJson);
+            document.getElementById('toolboxLoadBtn').addEventListener('click', () => importFile.click());
+            document.getElementById('toolboxResetBtn').addEventListener('click', resetToDefault);
+            toolboxStarFilterBtn.addEventListener('click', toggleStarFilter);
+            toolboxResetSearchBtn.addEventListener('click', resetSearch);
+
+            importFile.addEventListener('change', (e) => {
+                if (e.target.files.length) importFromJson(e.target.files[0]);
+                e.target.value = '';
+            });
+
+            closeImmersiveBtn.addEventListener('click', closeImmersive);
+            modal.addEventListener('click', (e) => { if (e.target === modal) closeImmersive(); });
+        }
+
+        window.addEventListener('DOMContentLoaded', init);
+    })();
+</script>
+</body>
+</html>
