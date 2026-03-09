@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>📚 书架·一书多笔记 (折叠状态持久化)</title>
+    <title>📚 书架·一书多笔记</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -38,7 +38,7 @@
             font-family: 'Segoe UI', Roboto, 'Microsoft YaHei', sans-serif;
             background: var(--bg-color);
             color: var(--text-main);
-            padding: 15px;
+            padding: 15px; /* 手机端减小内边距 */
             transition: var(--transition);
             line-height: 1.6;
         }
@@ -56,7 +56,7 @@
             font-size: 1.5rem; 
             font-weight: 600; 
             color: var(--text-main); 
-            white-space: nowrap;
+            white-space: nowrap; /* 防止标题换行 */
             overflow: hidden;
             text-overflow: ellipsis;
         }
@@ -161,7 +161,7 @@
         .filter-input {
             flex: 1; border: none; background: transparent;
             color: var(--text-main); font-size: 0.9rem;
-            min-width: 0;
+            min-width: 0; /* 关键：防止输入框撑开 */
         }
         .filter-select {
             border: none; background: transparent; color: var(--text-main);
@@ -183,29 +183,35 @@
         }
         .book-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
         
-        /* 书籍头部布局 */
+        /* 新增：折叠时隐藏笔记区域 */
+        .book-card.collapsed .notes-wrapper {
+            display: none;
+        }
+        
+        /* --- 核心修复：书籍头部布局 --- */
         .book-header {
             background: var(--bg-color); padding: 15px; 
-            display: flex; align-items: flex-start;
+            display: flex; align-items: flex-start; /* 改为顶部对齐，防止内容过多时错位 */
             gap: 12px;
             border-bottom: 1px solid var(--border);
             position: relative;
-            min-height: 70px;
+            min-height: 70px; /* 保证最小高度 */
         }
         
         .book-info { 
             flex: 1; 
-            min-width: 0;
+            min-width: 0; /* 关键：允许 flex 子元素缩小，防止文字不换行 */
             cursor: pointer;
             padding-right: 5px;
         }
         
+        /* 修复书名换行问题 */
         .book-info h3 { 
             font-size: 1.15rem; 
             color: var(--text-main); 
             margin-bottom: 4px; 
             line-height: 1.3;
-            word-break: break-word;
+            word-break: break-word; /* 允许在任意字符间断行 */
             overflow-wrap: break-word;
             hyphens: auto;
         }
@@ -223,10 +229,10 @@
 
         .book-meta { 
             display: flex; 
-            flex-direction: column;
+            flex-direction: column; /* 手机端改为垂直排列，避免拥挤 */
             align-items: flex-end;
             gap: 8px;
-            flex-shrink: 0;
+            flex-shrink: 0; /* 防止元数据区域被压缩 */
         }
 
         .meta-row {
@@ -252,19 +258,18 @@
             align-self: center;
         }
         .book-card.collapsed .expand-icon { transform: rotate(-90deg); }
-        .book-card.collapsed .notes-wrapper { display: none; }
 
         /* 书籍操作按钮组 */
         .book-actions {
             display: flex;
             gap: 4px;
-            opacity: 0.6;
+            opacity: 0.6; /* 默认稍微透明 */
             transition: opacity 0.2s;
         }
         .book-card:hover .book-actions { opacity: 1; }
         
         @media (max-width: 768px) {
-            .book-actions { opacity: 1; }
+            .book-actions { opacity: 1; } /* 移动端始终显示 */
             .book-header { padding: 12px; }
             .book-info h3 { font-size: 1.05rem; }
         }
@@ -512,20 +517,13 @@
     function loadData() {
         const b = localStorage.getItem('myLibrary_books_v2');
         const n = localStorage.getItem('myLibrary_notes_v2');
-        if (b) {
-            books = JSON.parse(b);
-            // 确保每本书都有 collapsed 字段（旧数据迁移）
-            books = books.map(book => ({
-                ...book,
-                collapsed: book.collapsed === undefined ? false : book.collapsed
-            }));
-        }
+        if (b) books = JSON.parse(b);
         if (n) notes = JSON.parse(n);
         
         if (books.length === 0) {
             books = [
-                { id: 1, title: '三体', author: '刘慈欣', status: '在读', collapsed: false },
-                { id: 2, title: 'ThisIsAVeryLongBookTitleForTestingWrap', author: 'Test Author', status: '已读', collapsed: false }
+                { id: 1, title: '三体', author: '刘慈欣', status: '在读' },
+                { id: 2, title: 'ThisIsAVeryLongBookTitleForTestingWrap', author: 'Test Author', status: '已读' }
             ];
             notes = [
                 { id: 1, bookId: 1, date: '2023-10-01', rating: 5, tags: ['科幻'], content: '黑暗森林法则。' }
@@ -542,7 +540,7 @@
         }
     }
 
-    window.toggleTheme = function() {
+    function toggleTheme() {
         isDarkMode = !isDarkMode;
         if (isDarkMode) {
             document.documentElement.setAttribute('data-theme', 'dark');
@@ -551,7 +549,7 @@
             document.documentElement.removeAttribute('data-theme');
             localStorage.setItem('theme', 'light');
         }
-    };
+    }
 
     function populateBookSelect() {
         const select = document.getElementById('noteBookSelect');
@@ -622,12 +620,10 @@
                 }).join('');
             }
 
-            // 根据 collapsed 字段添加类
-            const collapsedClass = book.collapsed ? 'collapsed' : '';
-
             return `
-                <div class="book-card ${collapsedClass}" data-id="${book.id}">
-                    <div class="book-header" onclick="toggleCard(this, ${book.id})">
+                <!-- 添加 collapsed 类实现默认折叠 -->
+                <div class="book-card collapsed" data-id="${book.id}">
+                    <div class="book-header" onclick="toggleCard(this)">
                         <div class="book-info">
                             <h3>${escapeHtml(book.title)}</h3>
                             <p><i class="fas fa-user-pen"></i> ${escapeHtml(book.author || '未知作者')}</p>
@@ -660,16 +656,9 @@
         document.getElementById('statNotes').innerText = notes.length;
     }
 
-    // 修改后的 toggleCard 函数：切换类并更新 collapsed 状态
-    window.toggleCard = function(header, bookId) {
+    window.toggleCard = function(header) {
         const card = header.closest('.book-card');
         card.classList.toggle('collapsed');
-        // 更新书籍的 collapsed 状态
-        const book = books.find(b => b.id == bookId);
-        if (book) {
-            book.collapsed = card.classList.contains('collapsed');
-            saveData(); // 保存状态
-        }
     };
 
     window.prepAddNote = function(bookId) {
@@ -746,7 +735,7 @@
             const idx = books.findIndex(b => b.id == id);
             if (idx !== -1) books[idx] = { ...books[idx], title, author, status };
         } else {
-            books.push({ id: Date.now(), title, author, status, collapsed: false });
+            books.push({ id: Date.now(), title, author, status });
         }
         saveData();
         renderBooks();
@@ -821,13 +810,7 @@
                 if (data.books && Array.isArray(data.books)) {
                     if(confirm('导入将合并数据。继续？')) {
                         const existingIds = new Set(books.map(b => b.id));
-                        data.books.forEach(b => { 
-                            if (!existingIds.has(b.id)) {
-                                // 确保导入的书籍有 collapsed 字段
-                                if (b.collapsed === undefined) b.collapsed = false;
-                                books.push(b); 
-                            }
-                        });
+                        data.books.forEach(b => { if (!existingIds.has(b.id)) books.push(b); });
                         const existingNoteIds = new Set(notes.map(n => n.id));
                         if (data.notes) data.notes.forEach(n => { if (!existingNoteIds.has(n.id)) notes.push(n); });
                         saveData();
