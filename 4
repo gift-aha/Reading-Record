@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>那不勒斯四部曲 · 分卷人物图谱</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, system-ui, -apple-system, 'Helvetica Neue', sans-serif;
+            background: #faf7f2;
+            color: #2c3e50;
+            line-height: 1.5;
+            padding: 1rem 0.6rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            border-bottom: 2px dashed #b87c5a;
+            padding-bottom: 1rem;
+        }
+
+        header h1 {
+            font-size: 1.9rem;
+            font-weight: 400;
+            color: #7e4b3a;
+            font-family: 'Times New Roman', serif;
+        }
+
+        header p {
+            font-size: 0.95rem;
+            color: #5e4b3c;
+            font-style: italic;
+            background: #e6dace;
+            display: inline-block;
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            margin-top: 0.6rem;
+        }
+
+        .book-section {
+            background: rgba(255,255,255,0.8);
+            border-radius: 2rem;
+            margin-bottom: 2.5rem;
+            padding: 1.2rem 1rem;
+            box-shadow: 0 8px 20px -8px rgba(0,0,0,0.1);
+            border: 1px solid #ecdacf;
+        }
+
+        .book-title {
+            font-size: 1.6rem;
+            font-weight: 500;
+            border-left: 6px solid #b87c5a;
+            padding-left: 0.8rem;
+            margin-bottom: 1rem;
+            color: #542f21;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .book-title i {
+            color: #996b54;
+            font-size: 1.3rem;
+        }
+
+        .book-sub {
+            font-size: 0.85rem;
+            color: #7b6458;
+            margin-left: 1rem;
+        }
+
+        .network-container {
+            background: #fffefc;
+            border-radius: 24px;
+            padding: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 1rem;
+        }
+
+        .network {
+            width: 100%;
+            height: 420px;
+            border-radius: 20px;
+            background: #fefaf7;
+            border: 1px solid #dcbeb0;
+        }
+
+        /* 人物卡片列表 (手机滚动) */
+        .char-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin-top: 1rem;
+            background: #f6ede6;
+            border-radius: 28px;
+            padding: 1rem;
+        }
+
+        .char-card-mini {
+            background: white;
+            border-radius: 40px;
+            padding: 0.4rem 1rem;
+            font-size: 0.8rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            flex: 1 1 auto;
+            min-width: 100px;
+            display: flex;
+            align-items: baseline;
+            gap: 0.4rem;
+            border: 1px solid #eedbcb;
+        }
+
+        .char-card-mini strong {
+            color: #7e4b3a;
+            font-weight: 600;
+        }
+
+        .char-card-mini span {
+            color: #4a3a2e;
+            font-size: 0.75rem;
+        }
+
+        @media (max-width: 550px) {
+            .network {
+                height: 380px;
+            }
+            .char-card-mini {
+                min-width: 120px;
+            }
+            .book-title {
+                font-size: 1.3rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .network {
+                height: 340px;
+            }
+        }
+
+        footer {
+            text-align: center;
+            margin: 2rem 0 0.5rem;
+            font-size: 0.75rem;
+            color: #8f7665;
+        }
+
+        .legend-note {
+            font-size: 0.7rem;
+            text-align: center;
+            color: #9c816e;
+            margin: 0.3rem 0 0;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1><i class="fas fa-book-open"></i> 那不勒斯四部曲 · 分卷人物图谱 <i class="fas fa-project-diagram"></i></h1>
+        <p>按部分独立展示 · 清晰梳理人物关系</p>
+    </header>
+
+    <!-- 第一部 -->
+    <div class="book-section">
+        <div class="book-title">
+            <i class="fas fa-1"></i> 我的天才女友
+            <span class="book-sub">童年 · 青春期 · 莉拉婚礼</span>
+        </div>
+        <div class="network-container">
+            <div id="network1" class="network"></div>
+        </div>
+        <div class="char-list" id="charList1"></div>
+        <div class="legend-note"><i class="fas fa-hand-pointer"></i> 可拖拽/缩放 | 连线文字表示关系</div>
+    </div>
+
+    <!-- 第二部 -->
+    <div class="book-section">
+        <div class="book-title">
+            <i class="fas fa-2"></i> 新名字的故事
+            <span class="book-sub">莉拉婚后 · 私奔 · 莱农大学时期</span>
+        </div>
+        <div class="network-container">
+            <div id="network2" class="network"></div>
+        </div>
+        <div class="char-list" id="charList2"></div>
+        <div class="legend-note"><i class="fas fa-hand-pointer"></i> 可拖拽/缩放 | 连线文字表示关系</div>
+    </div>
+
+    <!-- 第三部 -->
+    <div class="book-section">
+        <div class="book-title">
+            <i class="fas fa-3"></i> 离开的，留下的
+            <span class="book-sub">莱农婚姻 · 尼诺回归 · 莉拉计算机</span>
+        </div>
+        <div class="network-container">
+            <div id="network3" class="network"></div>
+        </div>
+        <div class="char-list" id="charList3"></div>
+        <div class="legend-note"><i class="fas fa-hand-pointer"></i> 可拖拽/缩放 | 连线文字表示关系</div>
+    </div>
+
+    <!-- 第四部 -->
+    <div class="book-section">
+        <div class="book-title">
+            <i class="fas fa-4"></i> 失踪的孩子
+            <span class="book-sub">蒂娜失踪 · 索拉拉之死 · 莉拉消失</span>
+        </div>
+        <div class="network-container">
+            <div id="network4" class="network"></div>
+        </div>
+        <div class="char-list" id="charList4"></div>
+        <div class="legend-note"><i class="fas fa-hand-pointer"></i> 可拖拽/缩放 | 连线文字表示关系</div>
+    </div>
+
+    <footer>
+        ⚡ 基于埃莱娜·费兰特原著整理 · 每部独立图谱，方便对照
+    </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js"></script>
+<script>
+    // 辅助函数：生成人物卡片HTML
+    function buildCharList(containerId, characters) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = characters.map(c => `
+            <div class="char-card-mini">
+                <strong>${c.name}</strong>
+                <span>${c.desc}</span>
+            </div>
+        `).join('');
+    }
+
+    // 创建网络图通用函数
+    function createNetwork(containerId, nodesData, edgesData, optionsOverride = {}) {
+        const container = document.getElementById(containerId);
+        if (!container) return null;
+        const nodes = new vis.DataSet(nodesData);
+        const edges = new vis.DataSet(edgesData);
+        const defaultOptions = {
+            autoResize: true,
+            height: '100%',
+            width: '100%',
+            layout: { improvedLayout: true, hierarchical: false },
+            interaction: { hover: true, tooltipDelay: 200, navigationButtons: true },
+            physics: {
+                enabled: true,
+                solver: 'forceAtlas2Based',
+                forceAtlas2Based: { gravitationalConstant: -30, centralGravity: 0.01 },
+                stabilization: { iterations: 120 }
+            },
+            edges: {
+                smooth: { type: 'continuous' },
+                font: { size: 10, align: 'middle', color: '#4a2f23', background: '#fdf1e8', strokeWidth: 0 },
+                color: { inherit: 'from' },
+                width: 1.8,
+                arrows: { to: { enabled: false } }
+            },
+            nodes: {
+                shape: 'dot',
+                size: 22,
+                font: { size: 11, color: '#2c1f18', face: 'Segoe UI', strokeWidth: 0 },
+                borderWidth: 1.5,
+                shadow: true
+            }
+        };
+        const options = { ...defaultOptions, ...optionsOverride };
+        return new vis.Network(container, { nodes, edges }, options);
+    }
+
+    // ================= 第一部：我的天才女友 =================
+    const nodes1 = [
+        { id: 'lenu', label: '莱农·格雷科', group: 'lenu', title: '第一视角，作家' },
+        { id: 'lila', label: '莉拉·赛鲁罗', group: 'lila', title: '天才少女' },
+        { id: 'nino_kid', label: '尼诺（少年）', group: 'nino', title: '童年出现，莱农暗恋' },
+        { id: 'enzo', label: '恩佐·斯坎诺', group: 'enzo', title: '小学同学' },
+        { id: 'stefano', label: '斯特凡诺', group: 'karachi', title: '肉食店老板' },
+        { id: 'marcello', label: '马尔切洛·索拉拉', group: 'solar', title: '追求莉拉' },
+        { id: 'michele', label: '米凯莱·索拉拉', group: 'solar', title: '弟弟' },
+        { id: 'antonio', label: '安东尼奥', group: 'achille', title: '莱农初恋' },
+        { id: 'pasquale', label: '帕斯卡莱', group: 'peluso', title: '泥瓦匠，共产党' },
+        { id: 'rino_sr', label: '里诺（兄）', group: 'cerullo', title: '莉拉哥哥' },
+        { id: 'fernando', label: '费尔南多', group: 'cerullo', title: '莉拉父亲，鞋匠' },
+        { id: 'nunzia', label: '农齐亚', group: 'cerullo', title: '莉拉母亲' },
+        { id: 'imma', label: '伊玛科拉塔', group: 'greco', title: '莱农母亲' },
+        { id: 'melina', label: '梅丽娜', group: 'achille', title: '安东尼奥母亲，精神失常' },
+        { id: 'donato', label: '多纳托', group: 'sarratore', title: '尼诺父亲，与梅丽娜有染' },
+        { id: 'gino', label: '吉诺', group: 'other', title: '莱童年喜欢过的男孩' }
+    ];
+
+    const edges1 = [
+        { from: 'lenu', to: 'lila', label: '挚友', color: '#d9735c' },
+        { from: 'lenu', to: 'antonio', label: '初恋', color: '#d48c6b' },
+        { from: 'lenu', to: 'nino_kid', label: '暗恋', color: '#c28b7c' },
+        { from: 'lila', to: 'stefano', label: '结婚', color: '#9b6b50' },
+        { from: 'lila', to: 'rino_sr', label: '兄妹', color: '#9b826b' },
+        { from: 'lila', to: 'marcello', label: '拒绝', color: '#b28b75', dashes: true },
+        { from: 'lila', to: 'fernando', label: '父女', color: '#a58e7a' },
+        { from: 'lila', to: 'nunzia', label: '母女', color: '#a58e7a' },
+        { from: 'lenu', to: 'imma', label: '母女', color: '#a58e7a' },
+        { from: 'antonio', to: 'melina', label: '母子', color: '#9b826b' },
+        { from: 'donato', to: 'melina', label: '情人', color: '#c07a5c', dashes: true },
+        { from: 'donato', to: 'nino_kid', label: '父子', color: '#9b826b' },
+        { from: 'marcello', to: 'michele', label: '兄弟', color: '#9b826b' },
+        { from: 'pasquale', to: 'lenu', label: '邻居', color: '#7f9b7a' },
+        { from: 'pasquale', to: 'lila', label: '老友', color: '#7f9b7a' },
+        { from: 'enzo', to: 'lenu', label: '同学', color: '#7f9b7a' }
+    ];
+
+    const charList1 = [
+        { name: '莱农·格雷科', desc: '第一视角，作家，莉拉挚友' },
+        { name: '莉拉·赛鲁罗', desc: '天才少女，鞋匠之女' },
+        { name: '尼诺（少年）', desc: '诗人之子，莱农暗恋对象' },
+        { name: '恩佐', desc: '小学同学，后来成为莉拉伴侣' },
+        { name: '斯特凡诺', desc: '肉食店老板，莉拉第一任丈夫' },
+        { name: '马尔切洛·索拉拉', desc: '黑道家族，追求莉拉' },
+        { name: '米凯莱·索拉拉', desc: '弟弟，更危险' },
+        { name: '安东尼奥', desc: '莱农初恋，精神脆弱' },
+        { name: '帕斯卡莱', desc: '泥瓦匠，左派活动家' },
+        { name: '里诺（兄）', desc: '莉拉哥哥，鞋匠' },
+        { name: '费尔南多', desc: '莉拉父亲，鞋匠' },
+        { name: '农齐亚', desc: '莉拉母亲' },
+        { name: '伊玛科拉塔', desc: '莱农母亲' },
+        { name: '梅丽娜', desc: '安东尼奥母亲，精神失常' },
+        { name: '多纳托', desc: '尼诺父亲，风流诗人' },
+        { name: '吉诺', desc: '童年追求莱农，后成法西斯' }
+    ];
+
+    // ================= 第二部：新名字的故事 =================
+    const nodes2 = [
+        { id: 'lenu2', label: '莱农', group: 'lenu', title: '比萨师范求学' },
+        { id: 'lila2', label: '莉拉', group: 'lila', title: '与斯特凡诺婚姻破裂' },
+        { id: 'nino2', label: '尼诺（成人）', group: 'nino', title: '诗人，政客' },
+        { id: 'enzo2', label: '恩佐', group: 'enzo', title: '参军归来，与莉拉同居' },
+        { id: 'stefano2', label: '斯特凡诺', group: 'karachi', title: '背叛莉拉' },
+        { id: 'pietro', label: '彼得罗·艾罗塔', group: 'airota', title: '莱农大学男友，教授' },
+        { id: 'franco', label: '弗朗科·马里', group: 'other', title: '莱农大学初恋，左翼' },
+        { id: 'nadya', label: '娜迪雅', group: 'other', title: '尼诺女友，加利亚尼之女' },
+        { id: 'galiani', label: '加利亚尼老师', group: 'other', title: '中学老师' },
+        { id: 'bruno', label: '布鲁诺', group: 'other', title: '工厂主，莉拉曾在厂工作' },
+        { id: 'alfonso', label: '阿方索', group: 'karachi', title: '斯特凡诺弟弟' },
+        { id: 'pinuccia', label: '皮诺奇娅', group: 'karachi', title: '斯特凡诺妹妹，嫁马尔切洛' },
+        { id: 'ada', label: '艾达', group: 'other', title: '安东尼奥姐姐，与斯特凡诺同居' },
+        { id: 'rino_sr2', label: '里诺（兄）', group: 'cerullo', title: '嫉妒莉拉' },
+        { id: 'pasquale2', label: '帕斯卡莱', group: 'peluso', title: '左派活动' }
+    ];
+
+    const edges2 = [
+        { from: 'lenu2', to: 'lila2', label: '挚友', color: '#d9735c' },
+        { from: 'lila2', to: 'nino2', label: '情人（私奔）', color: '#d48c6b' },
+        { from: 'lila2', to: 'enzo2', label: '伴侣', color: '#66997c' },
+        { from: 'lila2', to: 'stefano2', label: '决裂', color: '#9b6b50', dashes: true },
+        { from: 'lenu2', to: 'pietro', label: '订婚', color: '#9b6b50' },
+        { from: 'lenu2', to: 'franco', label: '前男友', color: '#d48c6b' },
+        { from: 'nino2', to: 'nadya', label: '情人', color: '#d48c6b' },
+        { from: 'nadya', to: 'galiani', label: '母女', color: '#9b826b' },
+        { from: 'lila2', to: 'bruno', label: '压迫', color: '#c07a5c', dashes: true },
+        { from: 'stefano2', to: 'ada', label: '同居', color: '#b28b75' },
+        { from: 'stefano2', to: 'alfonso', label: '兄弟', color: '#9b826b' },
+        { from: 'stefano2', to: 'pinuccia', label: '兄妹', color: '#9b826b' },
+        { from: 'lila2', to: 'rino_sr2', label: '兄妹', color: '#9b826b' },
+        { from: 'pasquale2', to: 'lila2', label: '同志', color: '#7f9b7a' },
+        { from: 'enzo2', to: 'lenu2', label: '同学', color: '#7f9b7a' }
+    ];
+
+    const charList2 = [
+        { name: '莱农', desc: '比萨师范毕业，出版小说' },
+        { name: '莉拉', desc: '工厂受苦，与恩佐同居' },
+        { name: '尼诺（成人）', desc: '政治活动，与莉拉私奔又抛弃' },
+        { name: '恩佐', desc: '参军归来，忠诚陪伴莉拉' },
+        { name: '斯特凡诺', desc: '破产，与莉拉离婚' },
+        { name: '彼得罗', desc: '莱农未婚夫，艾罗塔家族' },
+        { name: '弗朗科·马里', desc: '莱农大学初恋，左翼理想者' },
+        { name: '娜迪雅', desc: '加利亚尼之女，尼诺女友' },
+        { name: '加利亚尼老师', desc: '中学老师，知识分子' },
+        { name: '布鲁诺', desc: '工厂主，压迫工人' },
+        { name: '阿方索', desc: '斯特凡诺弟弟，性向复杂' },
+        { name: '皮诺奇娅', desc: '斯特凡诺妹妹，嫁索拉拉' },
+        { name: '艾达', desc: '安东尼奥姐姐，成斯特凡诺情妇' },
+        { name: '里诺（兄）', desc: '嫉妒莉拉才能' },
+        { name: '帕斯卡莱', desc: '激进左派' }
+    ];
+
+    // ================= 第三部：离开的，留下的 =================
+    const nodes3 = [
+        { id: 'lenu3', label: '莱农', group: 'lenu', title: '作家，已婚' },
+        { id: 'pietro3', label: '彼得罗', group: 'airota', title: '丈夫，教授' },
+        { id: 'nino3', label: '尼诺', group: 'nino', title: '重燃激情' },
+        { id: 'lila3', label: '莉拉', group: 'lila', title: '计算机专家' },
+        { id: 'enzo3', label: '恩佐', group: 'enzo', title: '计算机工程师' },
+        { id: 'dede', label: '黛黛', group: 'lenu_fam', title: '莱农长女' },
+        { id: 'elsa', label: '艾尔莎', group: 'lenu_fam', title: '莱农次女' },
+        { id: 'maria_adel', label: '阿黛尔', group: 'airota', title: '彼得罗母亲' },
+        { id: 'mariarosa', label: '马丽娅罗莎', group: 'airota', title: '彼得罗姐姐，女权' },
+        { id: 'michele3', label: '米凯莱', group: 'solar', title: '对莉拉执念' },
+        { id: 'pasquale3', label: '帕斯卡莱', group: 'peluso', title: '激进活动' },
+        { id: 'nadya3', label: '娜迪雅', group: 'other', title: '左翼' },
+        { id: 'bruno3', label: '布鲁诺', group: 'other', title: '工厂主，冲突' },
+        { id: 'gennaro', label: '詹纳罗（小里诺）', group: 'lila_fam', title: '莉拉与斯特凡诺之子' }
+    ];
+
+    const edges3 = [
+        { from: 'lenu3', to: 'lila3', label: '挚友', color: '#d9735c' },
+        { from: 'lenu3', to: 'pietro3', label: '婚姻破裂', color: '#9b6b50', dashes: true },
+        { from: 'lenu3', to: 'nino3', label: '情人', color: '#d48c6b' },
+        { from: 'lenu3', to: 'dede', label: '母女', color: '#b28b75' },
+        { from: 'lenu3', to: 'elsa', label: '母女', color: '#b28b75' },
+        { from: 'lila3', to: 'enzo3', label: '伴侣', color: '#66997c' },
+        { from: 'lila3', to: 'gennaro', label: '母子', color: '#b28b75' },
+        { from: 'pietro3', to: 'maria_adel', label: '母子', color: '#9b826b' },
+        { from: 'pietro3', to: 'mariarosa', label: '姐弟', color: '#9b826b' },
+        { from: 'mariarosa', to: 'lenu3', label: '密友', color: '#7f9b7a' },
+        { from: 'michele3', to: 'lila3', label: '执念', color: '#c07a5c', dashes: true },
+        { from: 'pasquale3', to: 'lenu3', label: '老友', color: '#7f9b7a' },
+        { from: 'nadya3', to: 'nino3', label: '旧情人', color: '#d48c6b' },
+        { from: 'lila3', to: 'bruno3', label: '冲突', color: '#c07a5c', dashes: true }
+    ];
+
+    const charList3 = [
+        { name: '莱农', desc: '婚姻压抑，与尼诺私奔' },
+        { name: '彼得罗', desc: '冷漠丈夫，教授' },
+        { name: '尼诺', desc: '政治明星，莱农情人' },
+        { name: '莉拉', desc: '计算机事业成功' },
+        { name: '恩佐', desc: '忠诚伴侣' },
+        { name: '黛黛', desc: '莱农长女' },
+        { name: '艾尔莎', desc: '莱农次女' },
+        { name: '阿黛尔', desc: '彼得罗母亲，高级知识分子' },
+        { name: '马丽娅罗莎', desc: '彼得罗姐姐，女权主义者' },
+        { name: '米凯莱', desc: '对莉拉执念加深' },
+        { name: '帕斯卡莱', desc: '激进左派' },
+        { name: '娜迪雅', desc: '尼诺情人之一' },
+        { name: '布鲁诺', desc: '工厂主，与莉拉对立' },
+        { name: '詹纳罗', desc: '莉拉儿子，叛逆' }
+    ];
+
+    // ================= 第四部：失踪的孩子 =================
+    const nodes4 = [
+        { id: 'lenu4', label: '莱农', group: 'lenu', title: '返回那不勒斯' },
+        { id: 'lila4', label: '莉拉', group: 'lila', title: '蒂娜失踪，崩溃' },
+        { id: 'nino4', label: '尼诺', group: 'nino', title: '莱农与他决裂' },
+        { id: 'enzo4', label: '恩佐', group: 'enzo', title: '陪伴莉拉' },
+        { id: 'tina', label: '蒂娜', group: 'lila_fam', title: '莉拉女儿，神秘失踪' },
+        { id: 'gennaro4', label: '詹纳罗', group: 'lila_fam', title: '莉拉儿子，堕落' },
+        { id: 'dede4', label: '黛黛', group: 'lenu_fam', title: '成年' },
+        { id: 'elsa4', label: '艾尔莎', group: 'lenu_fam', title: '成年' },
+        { id: 'imma_child', label: '伊玛', group: 'lenu_fam', title: '莱农与尼诺的女儿' },
+        { id: 'marcello4', label: '马尔切洛', group: 'solar', title: '被杀' },
+        { id: 'michele4', label: '米凯莱', group: 'solar', title: '被杀' },
+        { id: 'pasquale4', label: '帕斯卡莱', group: 'peluso', title: '被捕，流亡' },
+        { id: 'antonio4', label: '安东尼奥', group: 'achille', title: '回归，保护莱农' },
+        { id: 'franco4', label: '弗朗科', group: 'other', title: '晚年颓废，自杀' }
+    ];
+
+    const edges4 = [
+        { from: 'lenu4', to: 'lila4', label: '挚友', color: '#d9735c' },
+        { from: 'lila4', to: 'tina', label: '母女', color: '#b28b75' },
+        { from: 'lila4', to: 'gennaro4', label: '母子', color: '#b28b75' },
+        { from: 'lila4', to: 'enzo4', label: '伴侣', color: '#66997c' },
+        { from: 'lenu4', to: 'imma_child', label: '母女', color: '#b28b75' },
+        { from: 'lenu4', to: 'nino4', label: '决裂', color: '#d48c6b', dashes: true },
+        { from: 'lenu4', to: 'antonio4', label: '旧情复燃？', color: '#d48c6b' },
+        { from: 'tina', to: 'enzo4', label: '父女', color: '#9b826b' },
+        { from: 'marcello4', to: 'michele4', label: '兄弟', color: '#9b826b' },
+        { from: 'pasquale4', to: 'lila4', label: '老友', color: '#7f9b7a' },
+        { from: 'franco4', to: 'lenu4', label: '旧友', color: '#7f9b7a' },
+        { from: 'pasquale4', to: 'marcello4', label: '暗杀', color: '#c07a5c', dashes: true }
+    ];
+
+    const charList4 = [
+        { name: '莱农', desc: '与尼诺决裂，写书' },
+        { name: '莉拉', desc: '女儿蒂娜失踪，精神崩溃' },
+        { name: '尼诺', desc: '暴露虚伪，被莱农抛弃' },
+        { name: '恩佐', desc: '始终陪伴莉拉' },
+        { name: '蒂娜', desc: '莉拉女儿，神秘失踪' },
+        { name: '詹纳罗', desc: '莉拉儿子，吸毒潦倒' },
+        { name: '黛黛', desc: '莱农长女，独立' },
+        { name: '艾尔莎', desc: '莱农次女' },
+        { name: '伊玛', desc: '莱农与尼诺之女' },
+        { name: '马尔切洛', desc: '索拉拉长子，被杀' },
+        { name: '米凯莱', desc: '索拉拉次子，被杀' },
+        { name: '帕斯卡莱', desc: '被捕，流亡' },
+        { name: '安东尼奥', desc: '回归，保护莱农' },
+        { name: '弗朗科', desc: '理想破灭，自杀' }
+    ];
+
+    // 初始化所有网络图
+    window.addEventListener('load', () => {
+        createNetwork('network1', nodes1, edges1);
+        createNetwork('network2', nodes2, edges2);
+        createNetwork('network3', nodes3, edges3);
+        createNetwork('network4', nodes4, edges4);
+
+        buildCharList('charList1', charList1);
+        buildCharList('charList2', charList2);
+        buildCharList('charList3', charList3);
+        buildCharList('charList4', charList4);
+    });
+</script>
+</body>
+</html>
