@@ -5,392 +5,174 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
   <title>成为你想成为的人 · 每日探险</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       background: #f7f4ef;
-      font-family: 'Segoe UI', 'Noto Serif SC', '楷体', KaiTi, Georgia, 'Times New Roman', serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-      padding: 1.5rem;
-      color: #3e3a37;
+      font-family: 'Segoe UI', 'Noto Serif SC', '楷体', KaiTi, serif;
+      display: flex; justify-content: center; align-items: center;
+      min-height: 100vh; padding: 1.5rem; color: #3e3a37;
     }
     .container {
-      max-width: 520px;
-      width: 100%;
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(18px);
-      background: #fffbf5;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.03);
-      border-radius: 2.5rem;
-      padding: 2.5rem 2rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1.8rem;
-      border: 1px solid #ede6dc;
+      max-width: 520px; width: 100%;
+      background: #fffbf5; border-radius: 2.5rem; padding: 2.5rem 2rem;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.06); border: 1px solid #ede6dc;
+      display: flex; flex-direction: column; gap: 1.8rem;
     }
-    h1 {
-      font-size: 1.7rem;
-      font-weight: 400;
-      letter-spacing: 0.05em;
-      text-align: center;
-      color: #5b5248;
-      margin-bottom: 0.2rem;
-    }
-    .sub {
-      text-align: center;
-      font-size: 0.9rem;
-      color: #9b8c7c;
-      margin-top: -0.8rem;
-      margin-bottom: 0.3rem;
-    }
+    h1 { font-weight: 400; text-align: center; color: #5b5248; }
+    .sub { text-align: center; color: #9b8c7c; font-size: 0.9rem; margin-top: -0.5rem; }
     .quality-box {
-      background: #faf7f0;
-      border-radius: 2rem;
-      padding: 1.5rem 1.5rem;
-      text-align: center;
-      border: 1px dashed #d4c8b6;
+      background: #faf7f0; border-radius: 2rem; padding: 1.5rem;
+      text-align: center; border: 1px dashed #d4c8b6;
     }
-    .quality-label {
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.2em;
-      color: #b7a48b;
-      margin-bottom: 0.5rem;
-    }
-    .quality-word {
-      font-size: 2.5rem;
-      font-weight: 350;
-      color: #4d4438;
-      letter-spacing: 0.1em;
-      line-height: 1.3;
-      word-break: break-word;
-    }
-    .edit-hint {
-      font-size: 0.7rem;
-      color: #bbb0a0;
-      margin-top: 0.5rem;
-      cursor: pointer;
-      user-select: none;
-      transition: 0.2s;
-    }
-    .edit-hint:hover {
-      color: #8b7a65;
-    }
-
-    /* 每日挑战卡片 */
+    .quality-word { font-size: 2.5rem; color: #4d4438; }
+    .edit-hint { font-size: 0.7rem; color: #bbb0a0; cursor: pointer; margin-top: 0.5rem; }
     .challenge-card {
-      background: #f3efe4;
-      border-radius: 2rem;
-      padding: 1.4rem 1.5rem;
-      border: 1px solid #e3d8c4;
-      text-align: center;
-      transition: all 0.3s;
+      background: #f3efe4; border-radius: 2rem; padding: 1.4rem;
+      text-align: center; border: 1px solid #e3d8c4;
     }
-    .challenge-label {
-      font-size: 0.7rem;
-      letter-spacing: 0.25em;
-      color: #b8a382;
-      margin-bottom: 0.6rem;
-    }
-    .challenge-text {
-      font-size: 1.15rem;
-      color: #5b4e3a;
-      line-height: 1.5;
-      font-weight: 380;
-      margin-bottom: 0.9rem;
-    }
+    .challenge-text { font-size: 1.15rem; color: #5b4e3a; margin-bottom: 0.9rem; }
     .reroll-btn {
-      background: none;
-      border: 1px solid #d4c5a5;
-      background: #fefcf8;
-      color: #8b7a5c;
-      font-size: 0.8rem;
-      padding: 0.4rem 1.2rem;
-      border-radius: 2rem;
-      cursor: pointer;
-      font-family: inherit;
-      transition: 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3rem;
+      background: #fefcf8; border: 1px solid #d4c5a5; color: #8b7a5c;
+      padding: 0.4rem 1.2rem; border-radius: 2rem; cursor: pointer;
     }
-    .reroll-btn:hover:not(:disabled) {
-      background: #f5edd9;
-      border-color: #c2ad81;
-    }
-    .reroll-btn:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-    .rerolls-left {
-      font-size: 0.65rem;
-      color: #bfb09a;
-      margin-top: 0.3rem;
-    }
-
-    .vote-area {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.5rem;
-    }
+    .reroll-btn:disabled { opacity: 0.4; cursor: not-allowed; }
     .vote-btn {
-      background: #e7ddcb;
-      border: none;
-      color: #3e372c;
-      font-size: 1.2rem;
-      font-weight: 380;
-      letter-spacing: 0.15em;
-      padding: 0.9rem 2.8rem;
-      border-radius: 4rem;
-      cursor: pointer;
-      box-shadow: 0 6px 14px rgba(140,110,70,0.08);
-      transition: all 0.25s;
-      border: 1px solid #d6c6ab;
-      font-family: inherit;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
+      background: #e7ddcb; border: 1px solid #d6c6ab; padding: 0.9rem 2.8rem;
+      border-radius: 4rem; font-size: 1.2rem; cursor: pointer; display: block; margin: 0 auto;
     }
-    .vote-btn:hover:not(:disabled) {
-      background: #dfd1b8;
-      box-shadow: 0 10px 18px rgba(120,90,50,0.12);
-      transform: scale(1.02);
-    }
-    .vote-btn:active:not(:disabled) {
-      transform: scale(0.97);
-    }
-    .vote-btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      background: #e5ddce;
-      border-color: #d9cfbb;
-      box-shadow: none;
-    }
-    .status-message {
-      font-size: 0.85rem;
-      color: #7b6e5d;
-      min-height: 2rem;
-      text-align: center;
-    }
+    .vote-btn:disabled { opacity: 0.6; cursor: not-allowed; background: #e5ddce; }
+    .status-message { text-align: center; color: #7b6e5d; min-height: 2rem; }
     .streak-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.85rem;
-      color: #8e806e;
-      background: #f9f5ec;
-      padding: 0.9rem 1.2rem;
-      border-radius: 2rem;
+      display: flex; justify-content: space-between; background: #f9f5ec;
+      padding: 0.9rem 1.2rem; border-radius: 2rem; font-size: 0.85rem;
     }
-    .streak-number {
-      font-weight: 600;
-      font-size: 1.1rem;
-      color: #5f4e38;
-    }
-    .history-toggle {
-      background: none;
-      border: none;
-      color: #aa9b86;
-      font-size: 0.8rem;
-      cursor: pointer;
-      text-decoration: underline;
-      text-underline-offset: 3px;
-      font-family: inherit;
-    }
+    .history-toggle { background: none; border: none; color: #aa9b86; cursor: pointer; }
     .history-panel {
-      display: none;
-      background: #fcfaf5;
-      border-radius: 1.5rem;
-      padding: 1.2rem;
-      font-size: 0.8rem;
-      color: #6b5f51;
-      max-height: 120px;
-      overflow-y: auto;
-      border: 1px solid #eee4d6;
+      display: none; background: #fcfaf5; border-radius: 1.5rem; padding: 1.2rem;
+      max-height: 200px; overflow-y: auto; border: 1px solid #eee4d6;
     }
-    .history-panel.show {
-      display: block;
-    }
-    .history-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 0.2rem 0;
-      border-bottom: 1px dotted #e6dac8;
-    }
-    .reset-area {
-      display: flex;
-      justify-content: center;
-      gap: 1.5rem;
-      font-size: 0.7rem;
-      color: #bcaf9a;
-    }
+    .history-panel.show { display: block; }
+    .history-item { display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px dotted #e6dac8; }
+    .reset-area { text-align: center; }
     .reset-btn {
-      background: none;
-      border: none;
-      color: #b7a58b;
-      cursor: pointer;
-      text-decoration: underline;
-      font-family: inherit;
+      background: none; border: none; color: #b7a58b; cursor: pointer; text-decoration: underline;
+      margin: 0 0.5rem;
     }
-    .future-extension {
-      border-top: 1px dashed #e4d9c6;
-      padding-top: 1rem;
-      margin-top: 0.5rem;
-      text-align: center;
-      font-size: 0.7rem;
-      color: #c8bbaa;
-    }
-    .extension-slot {
-      display: inline-block;
-      background: #fefcf8;
-      border-radius: 1rem;
-      padding: 0.3rem 1rem;
-      margin: 0.2rem;
-      border: 1px solid #efe2ce;
+    .diary-input {
+      width: 100%; border: 1px solid #d6c6ab; border-radius: 1rem; padding: 0.5rem;
+      font-family: inherit; background: #fefcf8; margin-top: 0.5rem;
     }
   </style>
 </head>
 <body>
 <div class="container">
   <h1>🗺️ 每日探险</h1>
-  <div class="sub">为你想成为的人，投一票。接一个未知的挑战。</div>
+  <div class="sub">为你想成为的人，投一票。完成一个微挑战。</div>
 
   <div class="quality-box">
-    <div class="quality-label">我正在成为</div>
     <div class="quality-word" id="qualityWordDisplay">轻盈的</div>
-    <div class="edit-hint" id="editQualityHint">✎ 点击修改品质</div>
+    <div class="edit-hint" id="editQualityHint">✎ 修改品质</div>
   </div>
 
-  <!-- 每日挑战卡片 -->
-  <div class="challenge-card" id="challengeCard">
-    <div class="challenge-label">🌀 今日探索挑战</div>
+  <div class="challenge-card">
+    <div style="font-size:0.8rem; color:#b7a48b;">🌀 今日探索挑战</div>
     <div class="challenge-text" id="challengeText"></div>
-    <button class="reroll-btn" id="rerollButton">
-      <span>🎲</span> 换个挑战
-    </button>
-    <div class="rerolls-left" id="rerollsLeft"></div>
+    <button class="reroll-btn" id="rerollButton">🎲 换个挑战</button>
+    <div style="font-size:0.7rem; color:#bfb09a;" id="rerollsLeft"></div>
   </div>
 
-  <div class="vote-area">
-    <button class="vote-btn" id="voteButton">
-      <span>🗳️</span> 今日投票
-    </button>
-    <div class="status-message" id="statusMessage"></div>
-  </div>
+  <button class="vote-btn" id="voteButton">🗳️ 今日投票</button>
+  <div class="status-message" id="statusMessage"></div>
 
   <div class="streak-row">
-    <span>🔥 连续 <span class="streak-number" id="streakCount">0</span> 天</span>
-    <span>📅 总投票 <span class="streak-number" id="totalVotes">0</span> 次</span>
+    <span>🔥 连续 <span id="streakCount">0</span> 天</span>
+    <span>📅 总投票 <span id="totalVotes">0</span> 次</span>
   </div>
 
-  <button class="history-toggle" id="historyToggle">📜 查看历史</button>
+  <button class="history-toggle" id="historyToggle">📜 查看历史记录</button>
   <div class="history-panel" id="historyPanel">
     <div id="historyList"></div>
   </div>
 
   <div class="reset-area">
-    <button class="reset-btn" id="resetAllBtn">重置</button>
+    <button class="reset-btn" id="resetAllBtn">重置全部</button>
     <button class="reset-btn" id="zeroVoteSimulate">⚡ 零号投票</button>
   </div>
-
-  <div class="future-extension">
-    <span>🔮 扩展区</span>
-    <span class="extension-slot">🏆 成就</span>
-    <span class="extension-slot">📊 统计</span>
-    <span class="extension-slot">✍️ 日记</span>
+  <div style="font-size:0.7rem; color:#bfb09a; text-align:center;">
+    💡 零号投票：连续两天没投时，用它轻轻回来。
   </div>
 </div>
 
 <script>
   (function() {
-    const STORAGE_KEY = 'identity_vote_app_v2_explorer';
+    const STORAGE_KEY = 'identity_vote_v3_diary';
 
-    // ---------- 挑战库 ----------
-    // 根据品质类型，可以扩展更多。目前是通用 + 按品质大类匹配。
+    // 挑战库
     const CHALLENGE_POOLS = {
-      // 身体/活力类
       body: [
-        "今天，找一个理由踮着脚尖走五步路。",
-        "站起来，像刚睡醒的猫一样伸一个完整的懒腰。",
-        "用你最慢的速度喝一口水，感受它流过喉咙。",
-        "在无人看见的角落，抖动全身15秒，像抖掉灰尘。",
-        "闭上眼睛，用鼻子深吸一口气，用嘴巴缓缓呼出，重复三次。",
-        "今天，找到一扇窗户，对着外面的天空看10秒钟。",
+        "踮着脚尖走五步路。",
+        "伸一个完整的懒腰。",
+        "最慢的速度喝一口水。",
+        "无人处抖动全身15秒。",
+        "闭眼深呼吸三次。",
+        "对窗外天空看10秒。"
       ],
-      // 感知/专注类
       focus: [
-        "观察你手边最近的一个物体，找出它三个你从未注意过的细节。",
-        "今天，听一段声音：窗外的风声、冰箱的嗡鸣，或自己的呼吸，只听不评判。",
-        "在开始下一件事之前，停顿3秒，问自己：我现在真正需要的是什么？",
-        "找一个颜色，在接下来的一小时内，数一数你看到这个颜色多少次。",
-        "阅读一段文字（可以是任何东西），只读三行，然后复述给自己听。",
+        "观察身边物体三个未注意的细节。",
+        "只听一段声音，不评判。",
+        "做下一件事前停顿3秒。",
+        "找一个颜色，接下来一小时数它出现次数。",
+        "读三行文字，然后复述。"
       ],
-      // 连接/善意类
       connection: [
-        "今天，在心里默默祝福一个你遇到的陌生人。",
-        "对你身边的一个人（或宠物）说一句真诚的赞美。",
-        "给一个久未联系的朋友发一条只有一句话的问候，不求回复。",
-        "今天，当你听别人说话时，试着只听，不想着如何回应。",
-        "在电梯或排队时，观察一个人的手，想象它今天做了什么温柔的事。",
+        "在心里祝福一个陌生人。",
+        "对身边的人说一句真诚的赞美。",
+        "给久未联系的人发一句问候。",
+        "听人说话时只听不打断。",
+        "观察一个人的手，想象它做的温柔事。"
       ],
-      // 创造/俏皮类
       play: [
-        "给一个无生命的物体起一个可爱的名字。",
-        "在纸上或手机上画一个最潦草的笑脸，然后对自己笑一下。",
-        "用走路的方式，踩出一个小节奏。",
-        "把今天要做的一件事，用唱歌的方式在心里唱出来。",
-        "找一个词，今天刻意用三次，比如‘妙啊’、‘有意思’。",
+        "给无生命物体起个可爱名字。",
+        "画个笑脸，对自己笑一下。",
+        "走路踩出小节奏。",
+        "把一件事用唱歌的调子想出来。",
+        "今天刻意用三次某个有趣的词。"
       ],
-      // 精神/存在类
       spirit: [
-        "找一个安静的时刻，问自己：此刻，我存在吗？然后回答：是的。",
-        "写下一句你今天想到的、最真实的话，哪怕它只有三个字。",
-        "今天，做一件纯粹为了‘美’的事，比如整理一小角桌面，只为了它好看。",
-        "回想你最初定义这个品质的瞬间。那个瞬间，你在哪里？",
-        "对自己说：我允许自己今天不完美，但我仍然选择朝我想要的方向走一步。",
+        "问自己：此刻我存在吗？回答：是的。",
+        "写下今天最真实的一句话。",
+        "做一件纯粹为了‘美’的小事。",
+        "回想最初定义品质的那个瞬间。",
+        "对自己说：我允许不完美，但仍走一步。"
       ]
     };
-
-    // 所有挑战池合并
     const ALL_CHALLENGES = Object.values(CHALLENGE_POOLS).flat();
 
     const DEFAULT_DATA = {
       quality: '轻盈的',
       votes: {},
       lastVoteDate: null,
-      // 新增字段
-      dailyChallengeSeed: null,    // 存储今天生成的挑战索引，保证同一天刷新不变
-      rerollsUsed: 0,            // 今天已重摇次数
+      dailyChallengeSeed: null,
+      rerollsUsed: 0,
       completedChallenges: {},   // { 'YYYY-MM-DD': '挑战文本' }
+      diaries: {}                // { 'YYYY-MM-DD': '一句话日记' }
     };
 
     function loadData() {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return { ...DEFAULT_DATA, votes: {}, completedChallenges: {} };
+      if (!raw) return { ...DEFAULT_DATA, votes: {}, completedChallenges: {}, diaries: {} };
       try {
         return { ...DEFAULT_DATA, ...JSON.parse(raw) };
       } catch(e) {
-        return { ...DEFAULT_DATA, votes: {}, completedChallenges: {} };
+        return { ...DEFAULT_DATA, votes: {}, completedChallenges: {}, diaries: {} };
       }
     }
 
-    function saveData(data) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    }
+    function saveData(data) { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
 
     let appData = loadData();
 
-    function getTodayString() {
-      return new Date().toISOString().split('T')[0];
-    }
+    function getTodayString() { return new Date().toISOString().split('T')[0]; }
 
     function computeStreak(votes) {
       let streak = 0;
@@ -404,11 +186,8 @@
       return streak;
     }
 
-    function totalVoteCount(votes) {
-      return Object.keys(votes).length;
-    }
+    function totalVoteCount(votes) { return Object.keys(votes).length; }
 
-    // 基于日期生成稳定的伪随机索引
     function seededRandomIndex(seed, max) {
       let hash = 0;
       for (let i = 0; i < seed.length; i++) {
@@ -418,27 +197,18 @@
       return Math.abs(hash) % max;
     }
 
-    // 获取今日挑战文本
     function getTodayChallenge() {
       const today = getTodayString();
-      // 如果已手动重摇过，使用存储的 seed (是特定格式 'reroll:N')
       if (appData.dailyChallengeSeed && appData.dailyChallengeSeed.startsWith('reroll:')) {
         const idx = parseInt(appData.dailyChallengeSeed.split(':')[1], 10);
         return ALL_CHALLENGES[idx % ALL_CHALLENGES.length];
       }
-      // 否则基于日期生成稳定挑战
       const idx = seededRandomIndex(today, ALL_CHALLENGES.length);
       return ALL_CHALLENGES[idx];
     }
 
-    // 重摇挑战
     function rerollChallenge() {
-      const today = getTodayString();
-      if (appData.rerollsUsed >= 3) {
-        alert('今天已经摇了三次了。接受这个挑战，或者明天再来探索新的吧。');
-        return;
-      }
-      // 随机一个新索引
+      if (appData.rerollsUsed >= 3) return alert('今天已更换三次。');
       const newIdx = Math.floor(Math.random() * ALL_CHALLENGES.length);
       appData.dailyChallengeSeed = `reroll:${newIdx}`;
       appData.rerollsUsed = (appData.rerollsUsed || 0) + 1;
@@ -446,20 +216,16 @@
       refreshUI();
     }
 
-    // 每日重置逻辑：新的一天重置 rerollsUsed 和 seed (如果不是手动重摇)
     function resetDailyIfNewDay() {
       const today = getTodayString();
       if (appData.lastVoteDate !== today) {
-        // 新的一天：重置重摇次数，如果 seed 不是手动重摇则清空
         if (!appData.dailyChallengeSeed || !appData.dailyChallengeSeed.startsWith('reroll:')) {
           appData.dailyChallengeSeed = null;
         }
         appData.rerollsUsed = 0;
-        // 注意：不立即保存，等有操作再保存
       }
     }
 
-    // DOM
     const qualityWordDisplay = document.getElementById('qualityWordDisplay');
     const editQualityHint = document.getElementById('editQualityHint');
     const challengeText = document.getElementById('challengeText');
@@ -481,40 +247,31 @@
       const hasVotedToday = !!appData.votes[today];
 
       qualityWordDisplay.textContent = appData.quality;
-
-      // 挑战显示
-      const challenge = getTodayChallenge();
-      challengeText.textContent = challenge;
+      challengeText.textContent = getTodayChallenge();
       const used = appData.rerollsUsed || 0;
-      const remaining = 3 - used;
-      rerollsLeft.textContent = remaining > 0 ? `今日还可换 ${remaining} 次` : '今日更换次数已用完';
-      rerollButton.disabled = remaining <= 0;
+      rerollsLeft.textContent = `今日还可更换 ${3 - used} 次`;
+      rerollButton.disabled = (3 - used) <= 0;
 
-      // 投票按钮
       if (hasVotedToday) {
         voteButton.disabled = true;
-        voteButton.innerHTML = '<span>✅</span> 今日已投票';
-        statusMessage.innerHTML = '✨ 你已经为今天的自己投了票。挑战完成了吗？';
+        voteButton.innerHTML = '✅ 今日已投票';
+        statusMessage.innerHTML = '✨ 今天已经投票。挑战完成了吗？';
       } else {
         voteButton.disabled = false;
-        voteButton.innerHTML = '<span>🗳️</span> 今日投票';
-        const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
-        const dayBefore = new Date(); dayBefore.setDate(dayBefore.getDate()-2);
-        const yStr = yesterday.toISOString().split('T')[0];
-        const dbStr = dayBefore.toISOString().split('T')[0];
+        voteButton.innerHTML = '🗳️ 今日投票';
+        const y = new Date(); y.setDate(y.getDate()-1); const yStr = y.toISOString().split('T')[0];
+        const db = new Date(); db.setDate(db.getDate()-2); const dbStr = db.toISOString().split('T')[0];
         if (!appData.votes[yStr] && !appData.votes[dbStr]) {
-          statusMessage.innerHTML = '⏳ 零号投票提醒：今天只需“出现”。';
+          statusMessage.innerHTML = '⏳ 你已连续两天没投票，今天用零号投票轻轻回来吧。';
         } else if (!appData.votes[yStr]) {
-          statusMessage.innerHTML = '🍃 昨天休息了。今天轻轻回来。';
+          statusMessage.innerHTML = '🍃 昨天休息，今天轻轻回来。';
         } else {
-          statusMessage.innerHTML = '🌱 新的一天，投票并接受挑战吧。';
+          statusMessage.innerHTML = '🌱 新的一天，投票并接受挑战。';
         }
       }
 
-      // 连续 & 总计
       streakCountSpan.textContent = computeStreak(appData.votes);
       totalVotesSpan.textContent = totalVoteCount(appData.votes);
-
       renderHistory();
     }
 
@@ -525,31 +282,36 @@
         return;
       }
       let html = '';
-      for (let d of dates.slice(0,14)) {
-        const challengeDone = appData.completedChallenges?.[d] || '';
-        html += `<div class="history-item"><span>${d}</span><span>${challengeDone ? '🗳️+🌀' : '🗳️'}</span></div>`;
+      for (let d of dates.slice(0, 14)) {
+        const challenge = appData.completedChallenges?.[d] || '';
+        const diary = appData.diaries?.[d] || '';
+        let line = `🗳️ 投票`;
+        if (challenge) line += ` · 挑战：${challenge}`;
+        if (diary) line += ` · 📝 ${diary}`;
+        html += `<div class="history-item"><span>${d}</span><span>${line}</span></div>`;
       }
       historyList.innerHTML = html;
     }
 
     function castVote() {
       const today = getTodayString();
-      if (appData.votes[today]) {
-        alert('今天已投票。');
-        return;
-      }
+      if (appData.votes[today]) return alert('今日已投票。');
+      // 记录投票和挑战
       appData.votes[today] = true;
       appData.lastVoteDate = today;
-      // 记录挑战完成
       const challenge = getTodayChallenge();
-      appData.completedChallenges = appData.completedChallenges || {};
       appData.completedChallenges[today] = challenge;
+      // 弹出微日记（可选）
+      const diary = prompt('📝 想写一句微日记吗？(可留空)', '');
+      if (diary && diary.trim()) {
+        appData.diaries[today] = diary.trim();
+      }
       saveData(appData);
       refreshUI();
     }
 
     function editQuality() {
-      const nq = prompt('输入品质形容词：', appData.quality);
+      const nq = prompt('输入你的品质形容词：', appData.quality);
       if (nq && nq.trim()) {
         appData.quality = nq.trim();
         saveData(appData);
@@ -558,27 +320,29 @@
     }
 
     function resetAll() {
-      if (confirm('清除所有数据？')) {
-        appData = { ...DEFAULT_DATA, votes: {}, completedChallenges: {} };
+      if (confirm('清除所有投票、挑战和日记？')) {
+        appData = { ...DEFAULT_DATA, votes: {}, completedChallenges: {}, diaries: {} };
         saveData(appData);
         refreshUI();
       }
     }
 
-    function toggleHistory() {
-      historyPanel.classList.toggle('show');
-    }
+    function toggleHistory() { historyPanel.classList.toggle('show'); }
 
-    // 事件绑定
     voteButton.addEventListener('click', castVote);
     editQualityHint.addEventListener('click', editQuality);
     qualityWordDisplay.addEventListener('click', editQuality);
     rerollButton.addEventListener('click', rerollChallenge);
     resetAllBtn.addEventListener('click', resetAll);
-    zeroVoteSimulate.addEventListener('click', ()=>{
+    zeroVoteSimulate.addEventListener('click', () => {
       const today = getTodayString();
-      if (appData.votes[today]) { alert('今日已投票。'); return; }
-      castVote();
+      if (appData.votes[today]) return alert('今日已投票。');
+      // 零号投票：直接记录，不要求挑战日记
+      appData.votes[today] = true;
+      appData.lastVoteDate = today;
+      appData.completedChallenges[today] = '零号投票：只是出现';
+      saveData(appData);
+      refreshUI();
       statusMessage.innerHTML = '🌿 零号投票完成。你出现了，就够了。';
     });
     historyToggle.addEventListener('click', toggleHistory);
